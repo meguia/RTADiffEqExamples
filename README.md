@@ -2,7 +2,7 @@
 A Library of Examples using PortAudioODE
 
 Requirements:
-- [PortAudioODE.jl]https://github.com/antonioortegabrook/PortAudioODE
+- [PortAudioODE.jl](https://github.com/antonioortegabrook/PortAudioODE)
 
 Tested with
 - Julia v1.10.2
