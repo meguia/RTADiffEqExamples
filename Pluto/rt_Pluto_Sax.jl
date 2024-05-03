@@ -14,9 +14,6 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 00af18bb-7300-432f-9d40-45ed232f0d29
-using Pkg; Pkg.activate("../PortAudioODE/rtODE")
-
 # ╔═╡ 9922fbbc-b68a-4ce1-a790-7c6c03c894ec
 using PortAudio, PortAudio.LibPortAudio, PlutoUI, DifferentialEquations
 
@@ -26,8 +23,8 @@ include("../../PortAudioODE/rtODE/rt_ODE.jl")
 # ╔═╡ 20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
 begin
 	# Global Parameters
-	sample_rate::Cdouble = 48000.0
-	buffer_size::Culonglong = 512
+	sample_rate::Float64 = 48000.0
+	buffer_size::UInt64 = 512
 end;
 
 # ╔═╡ 6f1daecf-e410-49da-a9e0-1a6b77895179
@@ -57,10 +54,17 @@ end
 u0 = vcat([-0.3, 0],repeat([0.0,0.001],8));
 
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-source = rt_ODESource(saxRN!, u0, [0.3, 0.6], sample_rate, buffer_size)
+source = rt_ODESource(saxRN!, u0, [0.3, 0.6], sample_rate, buffer_size,[1,2])
 
 # ╔═╡ 1678c539-0f23-4638-a9ff-461ef268ad63
 @bind start Button("START")
+
+# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
+begin
+	@atomic source.data.control.ts = ts
+	@atomic source.data.control.p = [γ, ζ]
+	@atomic source.data.control.gain = g
+end	
 
 # ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
 md"""
@@ -69,13 +73,6 @@ g $(@bind g Slider(0.0:0.1:1.0,default=0.1;show_value=true)) \
 γ : $(@bind γ Slider(0.0:0.005:1.0,default=0.1;show_value=true))\
 ζ : $(@bind ζ Slider(0.0:0.01:1.0,default=0.6;show_value=true)) \
 """
-
-# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
-begin
-	@atomic source.data.control.ts = ts
-	@atomic source.data.control.p = [γ, ζ]
-	@atomic source.data.control.gain = g
-end	
 
 # ╔═╡ 8a155287-3565-4e4c-b2e9-1a8d658d6957
 @bind stop Button("STOP")
@@ -106,7 +103,6 @@ input[type*="range"] {
 
 # ╔═╡ Cell order:
 # ╠═9922fbbc-b68a-4ce1-a790-7c6c03c894ec
-# ╠═00af18bb-7300-432f-9d40-45ed232f0d29
 # ╠═fa35c482-d74f-11ee-0e9f-77b332036253
 # ╟─20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
 # ╠═6f1daecf-e410-49da-a9e0-1a6b77895179

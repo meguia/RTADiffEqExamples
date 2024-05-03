@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.39
+# v0.19.41
 
 using Markdown
 using InteractiveUtils
@@ -21,13 +21,13 @@ using PortAudio, PortAudio.LibPortAudio, PlutoUI, DifferentialEquations
 using Plots
 
 # ╔═╡ fa35c482-d74f-11ee-0e9f-77b332036253
-include("../rtODE/rt_ODE.jl")
+include("../../PortAudioODE/rtODE/rt_ODE.jl")
 
 # ╔═╡ 20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
 begin
 	# Global Parameters
-	sample_rate::Cdouble = 48000.0
-	buffer_size::Culonglong = 1024
+	sample_rate::Float64 = 48000.0
+	buffer_size::UInt64 = 1024
 end;
 
 # ╔═╡ 87db0fcd-6fe3-4620-be1f-6634e51723cb

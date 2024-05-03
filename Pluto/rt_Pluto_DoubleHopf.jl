@@ -27,7 +27,7 @@ theme(:dark)
 begin
 	# Global Parameters
 	sample_rate::Cdouble = 48000.0
-	buffer_size::Culonglong = 1024
+	buffer_size::UInt64 = 1024
 end;
 
 # ╔═╡ 6f1daecf-e410-49da-a9e0-1a6b77895179
@@ -84,6 +84,22 @@ end
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
 source = rt_SDESource(dhopf, noise, [0.1,0.0,0.1,0.0], [-0.1,-0.1,1.0,1.0,-0.1,0.0,0.1,-0.1], sample_rate, buffer_size,[1,3]);
 
+# ╔═╡ 6a52b54b-8d04-4c74-b06e-1b940de77173
+# ╠═╡ disabled = true
+#=╠═╡
+begin
+	m=-0.4:0.01:0.4
+	m1=-0.4:0.01:0
+	ns1 = -σ*0.01*m1/c+1/16.2*(m1/c).^2
+	ns2 = -σ*0.01*m1/c+1/18.5*(m1/c).^2
+	plot(m,m*0,c=:black,label="H1")
+	plot!(m*0,m,c=:gray,label="H2")
+	scatter!([μ2],[μ1])
+	plot!(ns1,m1,c=:red,label="NS1")
+	plot!(m1,ns2,c=:blue,label="NS2",size=(600,400),xlims=(-0.4,0.4),ylims=(-0.4,0.4))
+end	
+  ╠═╡ =#
+
 # ╔═╡ 426450e4-47bc-4e52-a85d-273a99093458
 @bind ticks Clock(0.1,true)
 
@@ -132,22 +148,6 @@ c : $(@bind c Slider(0.0:0.01:1.0,default=0.1;show_value=true)) \
 Coupling $(@bind cs Select([[1,1] => "coupling ++", [-1,-1] => "coupling --", [1,-1] => "coupling +-"]))  $sp $sp
 tail : $(@bind tail Slider(10:10:300,default=100;show_value=true)) \
 """
-
-# ╔═╡ 6a52b54b-8d04-4c74-b06e-1b940de77173
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	m=-0.4:0.01:0.4
-	m1=-0.4:0.01:0
-	ns1 = -σ*0.01*m1/c+1/16.2*(m1/c).^2
-	ns2 = -σ*0.01*m1/c+1/18.5*(m1/c).^2
-	plot(m,m*0,c=:black,label="H1")
-	plot!(m*0,m,c=:gray,label="H2")
-	scatter!([μ2],[μ1])
-	plot!(ns1,m1,c=:red,label="NS1")
-	plot!(m1,ns2,c=:blue,label="NS2",size=(600,400),xlims=(-0.4,0.4),ylims=(-0.4,0.4))
-end	
-  ╠═╡ =#
 
 # ╔═╡ f30f39a2-98f4-4888-9c9b-f2c557e49f31
 begin
@@ -2613,7 +2613,7 @@ version = "1.4.1+1"
 # ╠═9922fbbc-b68a-4ce1-a790-7c6c03c894ec
 # ╠═fa35c482-d74f-11ee-0e9f-77b332036253
 # ╠═7cc1dc79-235f-40f8-9399-197c8d1625f0
-# ╟─20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
+# ╠═20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
 # ╠═6f1daecf-e410-49da-a9e0-1a6b77895179
 # ╟─e69993f0-56aa-49bf-b91b-44d39989b5ff
 # ╠═87db0fcd-6fe3-4620-be1f-6634e51723cb

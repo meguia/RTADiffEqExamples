@@ -29,8 +29,8 @@ output_device = Pa_GetDefaultOutputDevice()
 # ╔═╡ 20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
 begin
 	# Global Parameters
-	sample_rate::Cdouble = 48000.0
-	buffer_size::Culonglong = 512
+	sample_rate::Float64 = 48000.0
+	buffer_size::UInt64 = 512
 end;
 
 # ╔═╡ 1d42bd2f-0518-4392-8abd-b14afb0f1b59
@@ -40,8 +40,11 @@ function thomas!(du,u,p,t)
 	du[3]=sin(p[1]*u[1])-p[2]*u[3]
 end	
 
+# ╔═╡ d3777e5a-7f15-40c4-ba13-4af091d73834
+channel_map = [1,2]
+
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-source = rt_ODESource(thomas!, [1.0;1.1;-0.01],[0.2,0.2], sample_rate, buffer_size);
+source = rt_ODESource(thomas!, [1.0;1.1;-0.01],[0.2,0.2], sample_rate, buffer_size,channel_map);
 
 # ╔═╡ cd976d06-b5e6-4115-9ab0-7abb5390347a
 @bind ticks Clock(0.1,true)
@@ -2542,6 +2545,7 @@ version = "1.4.1+1"
 # ╟─fa35c482-d74f-11ee-0e9f-77b332036253
 # ╟─20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
 # ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
+# ╠═d3777e5a-7f15-40c4-ba13-4af091d73834
 # ╠═46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
 # ╠═cd976d06-b5e6-4115-9ab0-7abb5390347a
 # ╟─6ef0c91a-93dd-429e-902f-dab242a8995a
