@@ -20,6 +20,9 @@ using PortAudio, PortAudio.LibPortAudio, PlutoUI, DifferentialEquations, Plots
 # ╔═╡ fa35c482-d74f-11ee-0e9f-77b332036253
 include("../../PortAudioODE/rtODE/rt_SDE.jl")
 
+# ╔═╡ 7cc1dc79-235f-40f8-9399-197c8d1625f0
+theme(:dark)
+
 # ╔═╡ 20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
 begin
 	# Global Parameters
@@ -81,6 +84,9 @@ end
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
 source = rt_SDESource(dhopf, noise, [0.1,0.0,0.1,0.0], [-0.1,-0.1,1.0,1.0,-0.1,0.0,0.1,-0.1], sample_rate, buffer_size,[1,3]);
 
+# ╔═╡ 426450e4-47bc-4e52-a85d-273a99093458
+@bind ticks Clock(0.1,true)
+
 # ╔═╡ 1678c539-0f23-4638-a9ff-461ef268ad63
 @bind start Button("START")
 
@@ -123,10 +129,13 @@ g $(@bind g Slider(0.0:0.1:1.0,default=0.1;show_value=true)) \
 k : $(@bind k Slider(0.01:0.01:2.0,default=1.0;show_value=true)) $sp
 c : $(@bind c Slider(0.0:0.01:1.0,default=0.1;show_value=true)) \
 σ $(@bind σ Select([1 => "positive", -1 => "negative"]))  $sp $sp $sp
-Coupling $(@bind cs Select([[1,1] => "coupling ++", [-1,-1] => "coupling --", [1,-1] => "coupling +-"]))  
+Coupling $(@bind cs Select([[1,1] => "coupling ++", [-1,-1] => "coupling --", [1,-1] => "coupling +-"]))  $sp $sp
+tail : $(@bind tail Slider(10:10:300,default=100;show_value=true)) \
 """
 
 # ╔═╡ 6a52b54b-8d04-4c74-b06e-1b940de77173
+# ╠═╡ disabled = true
+#=╠═╡
 begin
 	m=-0.4:0.01:0.4
 	m1=-0.4:0.01:0
@@ -138,12 +147,25 @@ begin
 	plot!(ns1,m1,c=:red,label="NS1")
 	plot!(m1,ns2,c=:blue,label="NS2",size=(600,400),xlims=(-0.4,0.4),ylims=(-0.4,0.4))
 end	
+  ╠═╡ =#
+
+# ╔═╡ f30f39a2-98f4-4888-9c9b-f2c557e49f31
+begin
+	ticks
+	sol = solve(SDEProblem(dhopf,noise,source.data.state.u,tail,source.data.control.p));
+end;
+
+# ╔═╡ f0943d24-1701-47b1-809c-447d20161b06
+begin
+	plot(sol,idxs=(1,2),c=:yellow,label="")
+	plot!(sol,idxs=(3,4),c=:green,label="",border=:none)
+end	
 
 # ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
 begin 
 	k1 = k*0.1
 	k2 = 0.1
-	σ2 = σ*0.2
+	σ2 = σ*0.1
 	c12 = cs[2]*c
 	c21 = cs[1]*c
 	@atomic source.data.control.ts = ts
@@ -2590,6 +2612,7 @@ version = "1.4.1+1"
 # ╔═╡ Cell order:
 # ╠═9922fbbc-b68a-4ce1-a790-7c6c03c894ec
 # ╠═fa35c482-d74f-11ee-0e9f-77b332036253
+# ╠═7cc1dc79-235f-40f8-9399-197c8d1625f0
 # ╟─20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
 # ╠═6f1daecf-e410-49da-a9e0-1a6b77895179
 # ╟─e69993f0-56aa-49bf-b91b-44d39989b5ff
@@ -2597,10 +2620,13 @@ version = "1.4.1+1"
 # ╠═305d0572-cd1f-467b-8689-d01e899c0dbe
 # ╠═46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
 # ╟─6a52b54b-8d04-4c74-b06e-1b940de77173
+# ╠═426450e4-47bc-4e52-a85d-273a99093458
 # ╟─1678c539-0f23-4638-a9ff-461ef268ad63
+# ╠═f30f39a2-98f4-4888-9c9b-f2c557e49f31
+# ╠═f0943d24-1701-47b1-809c-447d20161b06
 # ╟─1b21621d-ddc2-42dc-945f-60f4809d7ba3
 # ╟─8a155287-3565-4e4c-b2e9-1a8d658d6957
-# ╟─bce16403-6dac-4b30-9327-0fd17f04d2a9
+# ╠═bce16403-6dac-4b30-9327-0fd17f04d2a9
 # ╟─2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
 # ╟─5b8f7326-6d7f-44ac-82b9-799f03cedf46
 # ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
