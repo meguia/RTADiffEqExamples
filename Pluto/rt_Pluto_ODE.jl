@@ -51,6 +51,13 @@ let
 	rt_ODEStart(source, output_device)
 end	
 
+# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
+begin 
+	@atomic source.data.control.ts = ts
+	@atomic source.data.control.p = [μ, K, v0]
+	@atomic source.data.control.gain = g
+end	
+
 # ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
 md"""
 ts $(@bind ts Slider(100:10:3000,default=1600;show_value=true)) \
@@ -59,13 +66,6 @@ g $(@bind g Slider(0.0:0.1:1.0,default=0.1;show_value=true)) \
 v0 : $(@bind v0 Slider(0.0:0.01:1.0,default=0.0;show_value=true)) \
 K : $(@bind K Slider(0.1:0.1:5.0,default=2.0;show_value=true)) 
 """
-
-# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
-begin 
-	@atomic source.data.control.ts = ts
-	@atomic source.data.control.p = [μ, K, v0]
-	@atomic source.data.control.gain = g
-end	
 
 # ╔═╡ 8a155287-3565-4e4c-b2e9-1a8d658d6957
 @bind stop Button("STOP")

@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.39
+# v0.19.41
 
 using Markdown
 using InteractiveUtils
@@ -18,13 +18,13 @@ end
 using PortAudio, PortAudio.LibPortAudio, PlutoUI, DifferentialEquations, Plots
 
 # ╔═╡ fa35c482-d74f-11ee-0e9f-77b332036253
-include("../rtODE/rt_ODE.jl")
+include("../../PortAudioODE/rtODE/rt_ODE.jl")
 
 # ╔═╡ 20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
 begin
 	# Global Parameters
-	sample_rate::Cdouble = 48000.0
-	buffer_size::Culonglong = 1024
+	sample_rate::Float64 = 48000.0
+	buffer_size::UInt64 = 1024
 end;
 
 # ╔═╡ 6f1daecf-e410-49da-a9e0-1a6b77895179
@@ -56,30 +56,16 @@ function bautin!(du,u,p,t)
 end
 
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-source = rt_ODESource(bautin!, [0, 0.1], [-0.1, 1.0, -0.2, 0.1], sample_rate, buffer_size);
+source = rt_ODESource(bautin!, [0, 0.1], [-0.1, 1.0, -0.2, 0.1], sample_rate, buffer_size,[1,2]);
+
+# ╔═╡ c70e3e2b-b2b5-4104-a5c1-5af5df58aa82
+@bind ticks Clock(0.1,true)
 
 # ╔═╡ 1678c539-0f23-4638-a9ff-461ef268ad63
 @bind start Button("START")
 
-# ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
-md"""
-ts $(@bind ts Slider(100:10:3000,default=1600;show_value=true)) \
-g $(@bind g Slider(0.0:0.1:1.0,default=0.1;show_value=true)) \
-μ : $(@bind μ Slider(-1.0:0.01:1.0,default=0.1;show_value=true)) \
-k : $(@bind k Slider(0.01:0.01:2.0,default=1.0;show_value=true)) \
-σ : $(@bind σ Slider(-1.0:0.01:1.0,default=0.1;show_value=true)) \
-ξ : $(@bind ξ Slider(-1.0:0.01:-0.01,default=-0.1;show_value=true)) \
-"""
-
 # ╔═╡ 8a155287-3565-4e4c-b2e9-1a8d658d6957
 @bind stop Button("STOP")
-
-# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
-begin 
-	@atomic source.data.control.ts = ts
-	@atomic source.data.control.p = [μ,k,σ,ξ]
-	@atomic source.data.control.gain = g
-end;
 
 # ╔═╡ 2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
 let 
@@ -100,10 +86,43 @@ main {
     max-width: 1000px;
 }
 input[type*="range"] {
-	width: 90%;
+	width: 40%;
 }
 </style>
 """
+
+# ╔═╡ 2b895c61-b51d-4dc7-8136-b6909834d458
+sp = html"&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
+
+# ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
+md"""
+μ : $(@bind μ Slider(-1.0:0.01:1.0,default=0.1;show_value=true)) $sp
+k : $(@bind k Slider(0.01:0.01:2.0,default=1.0;show_value=true)) \
+σ : $(@bind σ Slider(-1.0:0.01:1.0,default=0.1;show_value=true)) $sp
+ξ : $(@bind ξ Slider(-1.0:0.01:-0.01,default=-0.1;show_value=true)) \
+ts $(@bind ts Slider(100:10:3000,default=1600;show_value=true)) $sp
+g $(@bind g Slider(0.0:0.1:1.0,default=0.1;show_value=true)) \
+tail $(@bind tail Slider(10:10:300,default=100;show_value=true)) $sp
+"""
+
+# ╔═╡ 08907105-482d-44ad-80c3-98542d79084f
+begin
+	ticks
+	sol = solve(ODEProblem(bautin!,source.data.state.u,tail,source.data.control.p));
+end;
+
+# ╔═╡ 7528ce2a-b05c-4c80-b159-08f7c30009b3
+plot(sol,idxs=(0,1),c=:yellow,label="",ylims=(-2,2),size=(1000,400))
+
+# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
+begin 
+	@atomic source.data.control.ts = ts
+	@atomic source.data.control.p = [μ,k,σ,ξ]
+	@atomic source.data.control.gain = g
+end;
+
+# ╔═╡ 1ab0e8f7-ab26-4803-a57a-9232b84b2c04
+theme(:dark)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -124,7 +143,7 @@ PortAudio = "~1.3.0"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.0"
+julia_version = "1.10.2"
 manifest_format = "2.0"
 project_hash = "58e4450778abf929dc07d9eb4afadea1a9bd9ef3"
 
@@ -350,7 +369,7 @@ weakdeps = ["Dates", "LinearAlgebra"]
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.0.5+1"
+version = "1.1.0+0"
 
 [[deps.ConcurrentUtilities]]
 deps = ["Serialization", "Sockets"]
@@ -1276,7 +1295,7 @@ version = "1.3.5+1"
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
-version = "0.3.23+2"
+version = "0.3.23+4"
 
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -2384,12 +2403,17 @@ version = "1.4.1+1"
 # ╟─e69993f0-56aa-49bf-b91b-44d39989b5ff
 # ╠═87db0fcd-6fe3-4620-be1f-6634e51723cb
 # ╠═46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
+# ╟─c70e3e2b-b2b5-4104-a5c1-5af5df58aa82
 # ╟─1678c539-0f23-4638-a9ff-461ef268ad63
+# ╠═7528ce2a-b05c-4c80-b159-08f7c30009b3
 # ╟─1b21621d-ddc2-42dc-945f-60f4809d7ba3
 # ╟─8a155287-3565-4e4c-b2e9-1a8d658d6957
-# ╟─bce16403-6dac-4b30-9327-0fd17f04d2a9
 # ╟─2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
 # ╟─5b8f7326-6d7f-44ac-82b9-799f03cedf46
+# ╟─08907105-482d-44ad-80c3-98542d79084f
+# ╟─bce16403-6dac-4b30-9327-0fd17f04d2a9
 # ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
+# ╟─2b895c61-b51d-4dc7-8136-b6909834d458
+# ╟─1ab0e8f7-ab26-4803-a57a-9232b84b2c04
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
