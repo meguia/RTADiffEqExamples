@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.41
+# v0.19.42
 
 using Markdown
 using InteractiveUtils
@@ -57,20 +57,20 @@ $\dot{y} = \mu_1 + \mu_2 x - \delta xy + x^2 - x^3 - x^2y$
 """
 
 # ╔═╡ 1d42bd2f-0518-4392-8abd-b14afb0f1b59
-function bogdanov(du, u, p, t)
+function bogdanov!(du, u, p, t)
 	(μ1,μ2,δ, η) = p 
 	du[1] = u[2]
     du[2] = μ1+u[1]*(μ2-δ*u[2]+u[1]*(1-u[1]-u[2]))
 end
 
 # ╔═╡ aa83ec1c-9aec-4a71-a7ff-5c024d370fed
-function noise(du,u,p,t)
+function noise!(du,u,p,t)
 	du[1] = p[end]
 	du[2] = 0
 end
 
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-source = rt_SDESource(bogdanov, noise, [0.1, 0.],[-0.2,-0.2,0.5,0.0], sample_rate, buffer_size,[2,2]);
+source = rt_SDESource(bogdanov!, noise!, [0.1, 0.],[-0.2,-0.2,0.5,0.0], sample_rate, buffer_size,[2,2]);
 
 # ╔═╡ 1678c539-0f23-4638-a9ff-461ef268ad63
 @bind start Button("START")
@@ -100,6 +100,13 @@ let
 	rt_SDEStop(source)
 end	
 
+# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
+begin 
+	@atomic source.data.control.ts = ts
+	@atomic source.data.control.p = [sn1(μ20),μ20-dμ2,δ,η]
+	@atomic source.data.control.gain = g
+end;
+
 # ╔═╡ 8d7fb8ae-ab5e-44bc-85f0-b6a1c5e472a3
 begin
 	sn1(μ2) =	-(3*μ2+2/3+sqrt(3*μ2+1.0)*(2*μ2+2/3))/9.0
@@ -111,13 +118,6 @@ begin
 		m2[1]
 	end	
 end;	
-
-# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
-begin 
-	@atomic source.data.control.ts = ts
-	@atomic source.data.control.p = [sn1(μ20),μ20-dμ2,δ,η]
-	@atomic source.data.control.gain = g
-end;
 
 # ╔═╡ 66434892-ed49-490c-aad7-6670917954f5
 begin
@@ -2630,6 +2630,6 @@ version = "1.4.1+1"
 # ╟─bce16403-6dac-4b30-9327-0fd17f04d2a9
 # ╟─8d7fb8ae-ab5e-44bc-85f0-b6a1c5e472a3
 # ╟─66434892-ed49-490c-aad7-6670917954f5
-# ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
+# ╠═b0744443-8d19-41dc-abe8-9ba90ca91ca7
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
