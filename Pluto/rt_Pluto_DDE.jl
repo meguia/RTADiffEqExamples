@@ -31,28 +31,25 @@ begin
 end;
 
 # ╔═╡ 1d42bd2f-0518-4392-8abd-b14afb0f1b59
-function simplest(u,h,p,t)
-	h(p,t-p[1])-h(p,t-p[1])^3
+function simplest!(du,u,h,p,t)
+	hs = h(p,t-p[1])[1]
+	du[1] = hs*(1.0-hs*hs)
 end
 
 # ╔═╡ 35e33642-7aee-418d-9dee-6e2328a0e2eb
-h(p,t) = 1.0
+h(p,t) = [0.5]
 
 # ╔═╡ 6082e503-99b3-4b94-978b-2ce74c3e70d0
 channel_map = [1,1]
 
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-source = rtde_source(simplest, [1.0], h, [0.1], sample_rate, buffer_size, channel_map)
+source = rtde_source(simplest!, [0.5], h, [0.1], sample_rate, buffer_size, channel_map)
 
 # ╔═╡ 1678c539-0f23-4638-a9ff-461ef268ad63
-@bind start Button("START")
-
-# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
-begin 
-	@atomic source.data.control.ts = ts
-	@atomic source.data.control.p = [τ]
-	@atomic source.data.control.gain = g
-end	
+# ╠═╡ disabled = true
+#=╠═╡
+#@bind start Button("START")
+  ╠═╡ =#
 
 # ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
 md"""
@@ -61,20 +58,39 @@ g: $(@bind g Slider(0.0:0.1:1.0,default=0.1;show_value=true)) \
 τ: $(@bind τ Slider(0.0:0.005:1.72,default=0.1;show_value=true))\
 """
 
+# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
+begin 
+	@atomic source.data.control.ts = ts
+	@atomic source.data.control.p = [τ]
+	@atomic source.data.control.gain = g
+end	
+
+# ╔═╡ 48f1377b-e8cb-4372-afe8-ab4ba3637fd7
+rtde_start(source, output_device)
+
 # ╔═╡ 8a155287-3565-4e4c-b2e9-1a8d658d6957
-@bind stop Button("STOP")
+# ╠═╡ disabled = true
+#=╠═╡
+#@bind stop Button("STOP")
+  ╠═╡ =#
 
 # ╔═╡ 2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
+# ╠═╡ disabled = true
+#=╠═╡
 let 
 	start
 	rtde_start(source, output_device)
 end	
+  ╠═╡ =#
 
 # ╔═╡ 5b8f7326-6d7f-44ac-82b9-799f03cedf46
+# ╠═╡ disabled = true
+#=╠═╡
 let 
 	stop
 	rtde_stop(source)
 end	
+  ╠═╡ =#
 
 # ╔═╡ b0744443-8d19-41dc-abe8-9ba90ca91ca7
 html"""
@@ -2113,6 +2129,7 @@ version = "3.5.0+0"
 # ╠═1678c539-0f23-4638-a9ff-461ef268ad63
 # ╠═bce16403-6dac-4b30-9327-0fd17f04d2a9
 # ╠═1b21621d-ddc2-42dc-945f-60f4809d7ba3
+# ╠═48f1377b-e8cb-4372-afe8-ab4ba3637fd7
 # ╠═8a155287-3565-4e4c-b2e9-1a8d658d6957
 # ╠═2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
 # ╠═5b8f7326-6d7f-44ac-82b9-799f03cedf46
