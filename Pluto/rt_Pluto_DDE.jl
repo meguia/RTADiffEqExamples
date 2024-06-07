@@ -31,46 +31,35 @@ begin
 end;
 
 # ╔═╡ 1d42bd2f-0518-4392-8abd-b14afb0f1b59
-function lff(du, u, p, t)
-	(ϵ10,ϵ20,ϵ1A,ϵ2A,α,ω) = p 
-	ϵ1 = ϵ10 + ϵ1A*sin(ω*t)*cos(α) + ϵ2A*cos(ω*t)*sin(α)
-	ϵ2 = ϵ20 + ϵ2A*cos(ω*t)*cos(α) - ϵ1A*sin(ω*t)*sin(α)
-	du[1] = u[2]
-	du[2] = ϵ1-u[2]+u[1]*(1.0+ϵ2*u[1]+u[2]-u[1]^2)
+function simplest(u,h,p,t)
+	h(p,t-p[1])-h(p,t-p[1])^3
 end
 
-# ╔═╡ aa83ec1c-9aec-4a71-a7ff-5c024d370fed
-function noise(du,u,p,t)
-	du[1] = p[7]
-	du[2] = 0.0
-end
+# ╔═╡ 35e33642-7aee-418d-9dee-6e2328a0e2eb
+h(p,t) = 1.0
+
+# ╔═╡ 6082e503-99b3-4b94-978b-2ce74c3e70d0
+channel_map = [1,1]
 
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-source = rtde_source(lff, noise, [0.1, 0.],[0.28,0.4,0.0,0.0,0.0,0.0,0.0], sample_rate, buffer_size,[1,2])
+source = rtde_source(simplest, [1.0], h, [0.1], sample_rate, buffer_size, channel_map)
 
 # ╔═╡ 1678c539-0f23-4638-a9ff-461ef268ad63
 @bind start Button("START")
 
-# ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
-md"""
-ts $(@bind ts Slider(100:10:3000,default=1600;show_value=true)) \
-g $(@bind g Slider(0.0:0.1:1.0,default=0.1;show_value=true)) \
-ϵ10 : $(@bind ϵ10 Slider(0.2:0.002:0.3,default=0.284;show_value=true))\
-ϵ20 : $(@bind ϵ20 Slider(0.2:0.001:1.0,default=0.362;show_value=true)) \
-ϵ1A : $(@bind ϵ1A Slider(0.0:0.01:0.2,default=0.0;show_value=true))\
-ϵ2A : $(@bind ϵ2A Slider(0.0:0.01:1.0,default=0.0;show_value=true)) \
-α : $(@bind α Slider(-0.2:0.001:0.2,default=0.0;show_value=true)) \
-ω : $(@bind ω Slider(0.0:0.0001:0.01,default=0.0;show_value=true)) \
-η : $(@bind η Slider(0.0:0.001:0.1,default=0.0;show_value=true)) \
-varout : $(@bind varout Select([1,2]))
-"""
-
 # ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
 begin 
 	@atomic source.data.control.ts = ts
-	@atomic source.data.control.p = [ϵ10,ϵ20,ϵ1A,ϵ2A,α,ω,η]
+	@atomic source.data.control.p = [τ]
 	@atomic source.data.control.gain = g
 end	
+
+# ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
+md"""
+ts: $(@bind ts Slider(100:10:3000,default=1600;show_value=true)) \
+g: $(@bind g Slider(0.0:0.1:1.0,default=0.1;show_value=true)) \
+τ: $(@bind τ Slider(0.0:0.005:1.72,default=0.1;show_value=true))\
+"""
 
 # ╔═╡ 8a155287-3565-4e4c-b2e9-1a8d658d6957
 @bind stop Button("STOP")
@@ -813,9 +802,9 @@ uuid = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
 version = "0.1.1"
 
 [[deps.Inflate]]
-git-tree-sha1 = "d1b1b796e47d94588b3757fe84fbf65a5ec4a80d"
+git-tree-sha1 = "ea8031dea4aff6bd41f1df8f2fdfb25b33626381"
 uuid = "d25df0c9-e2be-5dd7-82c8-3ad0b3e990b9"
-version = "0.1.5"
+version = "0.1.4"
 
 [[deps.IntelOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1458,9 +1447,9 @@ version = "1.3.4"
 
 [[deps.RecursiveArrayTools]]
 deps = ["Adapt", "ArrayInterface", "DocStringExtensions", "GPUArraysCore", "IteratorInterfaceExtensions", "LinearAlgebra", "RecipesBase", "SparseArrays", "StaticArraysCore", "Statistics", "SymbolicIndexingInterface", "Tables"]
-git-tree-sha1 = "d0f8d22294f932efb1617d669aff73a5c97d38ff"
+git-tree-sha1 = "758bc86b90e9fee2edc4af2a750b0d3f2d5c02c5"
 uuid = "731186ca-8d62-57ce-b412-fbd966d074cd"
-version = "3.20.0"
+version = "3.19.0"
 
     [deps.RecursiveArrayTools.extensions]
     RecursiveArrayToolsFastBroadcastExt = "FastBroadcast"
@@ -1800,9 +1789,9 @@ version = "0.2.7"
 
 [[deps.SymbolicIndexingInterface]]
 deps = ["Accessors", "ArrayInterface", "RuntimeGeneratedFunctions", "StaticArraysCore"]
-git-tree-sha1 = "a5f6f138b740c9d93d76f0feddd3092e6ef002b7"
+git-tree-sha1 = "b479c7a16803f08779ac5b7f9844a42621baeeda"
 uuid = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
-version = "0.3.22"
+version = "0.3.21"
 
 [[deps.TOML]]
 deps = ["Dates"]
@@ -2118,14 +2107,15 @@ version = "3.5.0+0"
 # ╠═6f1daecf-e410-49da-a9e0-1a6b77895179
 # ╠═20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
 # ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
-# ╠═aa83ec1c-9aec-4a71-a7ff-5c024d370fed
+# ╠═35e33642-7aee-418d-9dee-6e2328a0e2eb
+# ╠═6082e503-99b3-4b94-978b-2ce74c3e70d0
 # ╠═46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
 # ╠═1678c539-0f23-4638-a9ff-461ef268ad63
-# ╟─bce16403-6dac-4b30-9327-0fd17f04d2a9
-# ╟─1b21621d-ddc2-42dc-945f-60f4809d7ba3
-# ╟─8a155287-3565-4e4c-b2e9-1a8d658d6957
+# ╠═bce16403-6dac-4b30-9327-0fd17f04d2a9
+# ╠═1b21621d-ddc2-42dc-945f-60f4809d7ba3
+# ╠═8a155287-3565-4e4c-b2e9-1a8d658d6957
 # ╠═2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
-# ╟─5b8f7326-6d7f-44ac-82b9-799f03cedf46
-# ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
+# ╠═5b8f7326-6d7f-44ac-82b9-799f03cedf46
+# ╠═b0744443-8d19-41dc-abe8-9ba90ca91ca7
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
