@@ -15,7 +15,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ 9922fbbc-b68a-4ce1-a790-7c6c03c894ec
-using PortAudio, PortAudio.LibPortAudio, PlutoUI, DifferentialEquations, Plots
+using PortAudio.LibPortAudio, PlutoUI, DifferentialEquations, Plots
 
 # ╔═╡ fa35c482-d74f-11ee-0e9f-77b332036253
 include("../../PortAudioODE/rtODE/rt_ODE.jl")
@@ -28,7 +28,7 @@ begin
 end;
 
 # ╔═╡ 6f1daecf-e410-49da-a9e0-1a6b77895179
-output_device = Pa_GetDefaultOutputDevice()
+output_device = get_default_output_device()
 
 # ╔═╡ e69993f0-56aa-49bf-b91b-44d39989b5ff
 md"""
@@ -56,7 +56,7 @@ function bautin!(du,u,p,t)
 end
 
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-source = rt_ODESource(bautin!, [0, 0.1], [-0.1, 1.0, -0.2, 0.1], sample_rate, buffer_size,[1,2]);
+source = rt_ODESource(bautin!, [0, 0.1], [-0.1, 1.0, -0.2, 0.1]; channel_map = [1,2]);
 
 # ╔═╡ 18076eb2-0343-4479-8ad2-c080712fb5ff
 source.callback
@@ -146,7 +146,7 @@ PortAudio = "~1.3.0"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.2"
+julia_version = "1.10.3"
 manifest_format = "2.0"
 project_hash = "58e4450778abf929dc07d9eb4afadea1a9bd9ef3"
 
@@ -378,7 +378,7 @@ weakdeps = ["Dates", "LinearAlgebra"]
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.1.0+0"
+version = "1.1.1+0"
 
 [[deps.ConcurrentUtilities]]
 deps = ["Serialization", "Sockets"]
