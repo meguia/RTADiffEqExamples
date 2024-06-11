@@ -20,13 +20,6 @@ using PortAudio.LibPortAudio, PlutoUI, DifferentialEquations, Plots
 # ╔═╡ fa35c482-d74f-11ee-0e9f-77b332036253
 include("../../PortAudioODE/rtODE/rt_ODE.jl")
 
-# ╔═╡ 20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
-begin
-	# Global Parameters
-	sample_rate::Float64 = 48000.0
-	buffer_size::UInt64 = 1024
-end;
-
 # ╔═╡ 6f1daecf-e410-49da-a9e0-1a6b77895179
 output_device = get_default_output_device()
 
@@ -82,6 +75,13 @@ let
 	rt_ODEStop(source)
 end	
 
+# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
+begin 
+	@atomic source.data.control.ts = ts
+	@atomic source.data.control.p = [μ,k,σ,ξ]
+	@atomic source.data.control.gain = g
+end;
+
 # ╔═╡ b0744443-8d19-41dc-abe8-9ba90ca91ca7
 html"""
 <style>
@@ -116,13 +116,6 @@ end;
 
 # ╔═╡ 7528ce2a-b05c-4c80-b159-08f7c30009b3
 plot(sol,idxs=(0,1),c=:yellow,label="",ylims=(-2,2),size=(1000,400))
-
-# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
-begin 
-	@atomic source.data.control.ts = ts
-	@atomic source.data.control.p = [μ,k,σ,ξ]
-	@atomic source.data.control.gain = g
-end;
 
 # ╔═╡ 1ab0e8f7-ab26-4803-a57a-9232b84b2c04
 theme(:dark)
@@ -2418,7 +2411,6 @@ version = "1.4.1+1"
 # ╔═╡ Cell order:
 # ╠═9922fbbc-b68a-4ce1-a790-7c6c03c894ec
 # ╠═fa35c482-d74f-11ee-0e9f-77b332036253
-# ╠═20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
 # ╠═6f1daecf-e410-49da-a9e0-1a6b77895179
 # ╟─e69993f0-56aa-49bf-b91b-44d39989b5ff
 # ╠═87db0fcd-6fe3-4620-be1f-6634e51723cb
@@ -2429,7 +2421,7 @@ version = "1.4.1+1"
 # ╠═7528ce2a-b05c-4c80-b159-08f7c30009b3
 # ╟─1b21621d-ddc2-42dc-945f-60f4809d7ba3
 # ╟─8a155287-3565-4e4c-b2e9-1a8d658d6957
-# ╟─2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
+# ╠═2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
 # ╟─5b8f7326-6d7f-44ac-82b9-799f03cedf46
 # ╟─08907105-482d-44ad-80c3-98542d79084f
 # ╟─bce16403-6dac-4b30-9327-0fd17f04d2a9
