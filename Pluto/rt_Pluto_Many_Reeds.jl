@@ -20,23 +20,6 @@ using Atomix,PortAudio.LibPortAudio, PlutoUI, DifferentialEquations, JLD2, Plots
 # ╔═╡ fa35c482-d74f-11ee-0e9f-77b332036253
 include("../../PortAudioODE/rtODE/rt_ODE.jl")
 
-# ╔═╡ 1b0e9cf3-1dbb-4ae6-b6d4-3e533748e7a7
-md"""
-# Self - Oscilator: modified reed model
-
-As an example of a self-oscillator, inspired by a musical instrument, that undergooes an Hopf bifurcation we choose modified version of the Rayleigh model of a clarinet reed:
-
-$\dot{x}  =  y$
-$\dot{y}  =  - kx + \mu(y-v_0)-(y-v_0)^3$
-
-when $v_0=0$ it becomes the original Rayleigh model and undergoes a Supercritical Hopf bifurcation when $\mu$ crosses zero from the negatives. The angular frequency of the oscillator at the bifurcation is $\omega = \sqrt{k}$. As the value of $\mu$ increases the amplitude of the stable limit cycle increases proportional to $\sqrt{\mu}$ and the frequency slightly decreases.
-
-In the extended parameter space $(v_0,\mu)$ the Hopf bifurcation follow the curve $\mu=3v_0^2$. Crossing the bifurcation at values of $v_0$ differente from zero give rise to more asymetrical limit cycles ith greater harmonic richness and which have a much steeper drop in pitch immediately after crossing the bifurcation.
-
-
-
-"""
-
 # ╔═╡ 1d42bd2f-0518-4392-8abd-b14afb0f1b59
 function freed!(du,u,p,t)
     (μ,k,v0) = p
@@ -46,82 +29,93 @@ function freed!(du,u,p,t)
 end
 
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-source = DESource(freed!, [0.1, 0.], [-0.1, 1.0, 0.]; channel_map = [1,2])
-
-# ╔═╡ 1678c539-0f23-4638-a9ff-461ef268ad63
-@bind start Button("START")
-
-# ╔═╡ 8a155287-3565-4e4c-b2e9-1a8d658d6957
-@bind stop Button("STOP")
+begin 
+	source1 = DESource(freed!, [0.1, 0.], [-0.1, 1.0, 0.]; channel_map = [0,1])
+	source2 = DESource(freed!, [0.1, 0.], [-0.1, 1.0, 0.]; channel_map = [1,1])
+	source3 = DESource(freed!, [0.1, 0.], [-0.1, 1.0, 0.]; channel_map = [1,0])
+end;
 
 # ╔═╡ 6f1daecf-e410-49da-a9e0-1a6b77895179
 output_device = get_default_output_device();
-
-# ╔═╡ 2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
-let 
-	start
-	if Pa_IsStreamActive(source.data.stream_data.stream[]) < 0
-		start_DESource(source, output_device)
-	else
-		print("stream already started")
-	end	
-end	
-
-# ╔═╡ 5b8f7326-6d7f-44ac-82b9-799f03cedf46
-let 
-	stop
-	if Pa_IsStreamActive(source.data.stream_data.stream[]) > 0
-		stopDESource(source)
-	else
-		print("stream is not active")
-	end
-end	
-
-# ╔═╡ 225ba501-3a46-443a-91ea-c22dc7cbdad5
-begin
-	saved_values = load("freed.jld2")
-	mu_v = saved_values["mu"]
-	v0_v = saved_values["v0"]
-	knotes = saved_values["knotes"]
-	ampl_v = saved_values["ampl"]
-	freq_v = saved_values["freq"]
-end;	
-
-# ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
-md"""
-dμ : $(@bind dμ Slider(-0.1:0.001:0.3,default=-0.1;show_value=true)) \
-v0 : $(@bind v0 Slider(0.0:0.01:0.5,default=0.3;show_value=true)) \
-k : $(@bind k Slider(knotes,default=1.0;show_value=false)) \
-ts $(@bind ts Slider(100:10:3000,default=1600;show_value=true)) \
-g $(@bind g Slider(0.0:0.1:1.0,default=0.1;show_value=true)) \
-"""
-
-# ╔═╡ 68c7bb4f-5345-4f15-a974-bdecdc7c0209
-begin
-	ik = findmin(abs.(knotes .- k))[2]
-	contourf(v0_v,mu_v,freq_v[ik,:,:]',levels=levels=freq_v[ik,1,1]*2 .^(-12/12:1/12:0),colorbar=false)
-	plot!(v0_v,3*v0_v.^2,c=:black,lw=3,label="")
-	scatter!([v0],[3*v0^2+dμ],c=:blue,label="",xlabel="V0",ylabel="μ")
-end	
-
-# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
-begin 
-	@atomic source.data.control.ts = ts
-	@atomic source.data.control.p = [3*v0^2+dμ, k, v0]
-	@atomic source.data.control.gain = g
-end;
 
 # ╔═╡ b0744443-8d19-41dc-abe8-9ba90ca91ca7
 html"""
 <style>
 main {
-    max-width: 1000px;
+    max-width: 1200px;
 }
 input[type*="range"] {
-	width: 90%;
+	width: 20%;
 }
 </style>
 """
+
+# ╔═╡ efc7afd3-c113-4910-949f-2ced2bec0646
+sp = html"&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
+
+# ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
+md"""
+R1 : $(@bind R1 CheckBox()) $sp 
+dμ : $(@bind dμ1 Slider(-0.1:0.001:0.3,default=-0.1;show_value=true)) $sp
+v0 : $(@bind v01 Slider(0.0:0.01:0.5,default=0.3;show_value=true)) $sp
+k : $(@bind k1 Slider(0.1:0.01:2.0,default=1.0;show_value=true)) \
+R2 : $(@bind R2 CheckBox()) $sp 
+dμ : $(@bind dμ2 Slider(-0.1:0.001:0.3,default=-0.1;show_value=true)) $sp
+v0 : $(@bind v02 Slider(0.0:0.01:0.5,default=0.3;show_value=true)) $sp
+k : $(@bind k2 Slider(0.1:0.01:2.0,default=1.0;show_value=true)) \
+R3 : $(@bind R3 CheckBox()) $sp 
+dμ : $(@bind dμ3 Slider(-0.1:0.001:0.3,default=-0.1;show_value=true)) $sp
+v0 : $(@bind v03 Slider(0.0:0.01:0.5,default=0.3;show_value=true)) $sp
+k : $(@bind k3 Slider(0.1:0.01:2.0,default=1.0;show_value=true)) \
+$sp $sp $sp ts $(@bind ts Slider(100:10:3000,default=1600;show_value=true)) $sp
+g $(@bind g Slider(0.0:0.1:1.0,default=0.1;show_value=true)) \
+"""
+
+# ╔═╡ df2bdf00-c0a3-499c-89b9-f880bc91e66b
+if R1
+	if Pa_IsStreamActive(source1.data.stream_data.stream[]) < 0
+		start_DESource(source1, output_device)
+	end	
+else	
+	if Pa_IsStreamActive(source1.data.stream_data.stream[]) > 0
+		stopDESource(source1)
+	end	
+end
+
+# ╔═╡ d5efe08e-543a-42d6-8eec-2f50d73f6dee
+if R2
+	if Pa_IsStreamActive(source2.data.stream_data.stream[]) < 0
+		start_DESource(source2, output_device)
+	end	
+else	
+	if Pa_IsStreamActive(source2.data.stream_data.stream[]) > 0
+		stopDESource(source2)
+	end	
+end
+
+# ╔═╡ f3f2860a-6f55-4c96-9d21-9f86dd926268
+if R3
+	if Pa_IsStreamActive(source3.data.stream_data.stream[]) < 0
+		start_DESource(source3, output_device)
+	end	
+else	
+	if Pa_IsStreamActive(source3.data.stream_data.stream[]) > 0
+		stopDESource(source3)
+	end	
+end
+
+# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
+begin 
+	@atomic source1.data.control.ts = ts
+	@atomic source1.data.control.p = [3*v01^2+dμ1, k1, v01]
+	@atomic source1.data.control.gain = g
+	@atomic source2.data.control.ts = ts
+	@atomic source2.data.control.p = [3*v02^2+dμ2, k2, v02]
+	@atomic source2.data.control.gain = 0.5*g
+	@atomic source3.data.control.ts = ts
+	@atomic source3.data.control.p = [3*v03^2+dμ3, k3, v03]
+	@atomic source3.data.control.gain = g
+end;
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2596,18 +2590,15 @@ version = "1.4.1+1"
 # ╔═╡ Cell order:
 # ╠═9922fbbc-b68a-4ce1-a790-7c6c03c894ec
 # ╠═fa35c482-d74f-11ee-0e9f-77b332036253
-# ╟─1b0e9cf3-1dbb-4ae6-b6d4-3e533748e7a7
 # ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
 # ╠═46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-# ╟─1678c539-0f23-4638-a9ff-461ef268ad63
-# ╟─68c7bb4f-5345-4f15-a974-bdecdc7c0209
 # ╟─1b21621d-ddc2-42dc-945f-60f4809d7ba3
-# ╟─8a155287-3565-4e4c-b2e9-1a8d658d6957
 # ╟─6f1daecf-e410-49da-a9e0-1a6b77895179
-# ╟─2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
-# ╟─5b8f7326-6d7f-44ac-82b9-799f03cedf46
-# ╟─225ba501-3a46-443a-91ea-c22dc7cbdad5
+# ╟─df2bdf00-c0a3-499c-89b9-f880bc91e66b
+# ╟─d5efe08e-543a-42d6-8eec-2f50d73f6dee
+# ╟─f3f2860a-6f55-4c96-9d21-9f86dd926268
 # ╟─bce16403-6dac-4b30-9327-0fd17f04d2a9
 # ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
+# ╟─efc7afd3-c113-4910-949f-2ced2bec0646
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
