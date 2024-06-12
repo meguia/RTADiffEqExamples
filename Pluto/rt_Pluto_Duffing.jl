@@ -15,20 +15,10 @@ macro bind(def, element)
 end
 
 # ╔═╡ 9922fbbc-b68a-4ce1-a790-7c6c03c894ec
-using PortAudio, PortAudio.LibPortAudio, PlutoUI, DifferentialEquations, Plots
+using Atomix,PortAudio.LibPortAudio, PlutoUI, DifferentialEquations, Plots
 
 # ╔═╡ fa35c482-d74f-11ee-0e9f-77b332036253
-include("../../PortAudioODE/src/rt_de.jl")
-
-# ╔═╡ 20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
-begin
-	# Global Parameters
-	sample_rate::Float64 = 48000.0
-	buffer_size::UInt64 = 512
-end;
-
-# ╔═╡ 6f1daecf-e410-49da-a9e0-1a6b77895179
-output_device = Pa_GetDefaultOutputDevice()
+include("../../PortAudioODE/rtODE/rt_ODE.jl")
 
 # ╔═╡ 1d42bd2f-0518-4392-8abd-b14afb0f1b59
 function fduff!(du,u,p,t)
@@ -36,11 +26,8 @@ function fduff!(du,u,p,t)
     du[2] = -p[1]*u[2]+u[1]*(p[2]-u[1]*u[1])+p[3]*cos(p[4]*t)
 end	
 
-# ╔═╡ 803cdbc8-004a-47ed-b270-4951c5471382
-channel_map = [1,2]
-
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-source = rtde_source(fduff!, [0.1, 0.], [0.15, 1.0, 0.,0.], sample_rate, buffer_size, channel_map);
+source = DESource(fduff!, [0.1, 0.], [0.15, 1.0, 0.,0.]; channel_map = [0,2]);
 
 # ╔═╡ 91015f7c-61ee-49cf-a8bb-e50f81b01964
 @bind ticks Clock(0.1,true)
@@ -62,16 +49,27 @@ tail : $(@bind tail Slider(10:10:300,default=100;show_value=true))
 # ╔═╡ 8a155287-3565-4e4c-b2e9-1a8d658d6957
 @bind stop Button("STOP")
 
+# ╔═╡ 6f1daecf-e410-49da-a9e0-1a6b77895179
+output_device = get_default_output_device();
+
 # ╔═╡ 2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
 let 
 	start
-	rtde_start(source, output_device)
+	if Pa_IsStreamActive(source.data.stream_data.stream[]) < 0
+		start_DESource(source, output_device)
+	else
+		print("stream already started")
+	end	
 end	
 
 # ╔═╡ 5b8f7326-6d7f-44ac-82b9-799f03cedf46
 let 
 	stop
-	rtde_stop(source)
+	if Pa_IsStreamActive(source.data.stream_data.stream[]) > 0
+		stopDESource(source)
+	else
+		print("stream is not active")
+	end
 end	
 
 # ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
@@ -109,12 +107,14 @@ input[type*="range"] {
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+Atomix = "a9b6321e-bd34-4604-b9c9-b65b8de01458"
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PortAudio = "80ea8bcb-4634-5cb3-8ee8-a132660d1d2d"
 
 [compat]
+Atomix = "~0.1.0"
 DifferentialEquations = "~7.13.0"
 Plots = "~1.40.4"
 PlutoUI = "~0.7.59"
@@ -127,7 +127,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "72a970904987898bd421eb37b8d284d24af1f0fa"
+project_hash = "fd63f6ff29035ebc4377a4eef509bc2e27bc939f"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "016833eb52ba2d6bea9fcb50ca295980e728ee24"
@@ -238,6 +238,12 @@ weakdeps = ["SparseArrays"]
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
+
+[[deps.Atomix]]
+deps = ["UnsafeAtomics"]
+git-tree-sha1 = "c06a868224ecba914baa6942988e2f2aade419be"
+uuid = "a9b6321e-bd34-4604-b9c9-b65b8de01458"
+version = "0.1.0"
 
 [[deps.BandedMatrices]]
 deps = ["ArrayLayouts", "FillArrays", "LinearAlgebra", "PrecompileTools"]
@@ -2175,6 +2181,11 @@ git-tree-sha1 = "e2d817cc500e960fdbafcf988ac8436ba3208bfd"
 uuid = "45397f5d-5981-4c77-b2b3-fc36d6e9b728"
 version = "1.6.3"
 
+[[deps.UnsafeAtomics]]
+git-tree-sha1 = "6331ac3440856ea1988316b46045303bef658278"
+uuid = "013be700-e6cd-48c3-b4a1-df204f14c38f"
+version = "0.2.1"
+
 [[deps.Unzip]]
 git-tree-sha1 = "ca0969166a028236229f63514992fc073799bb78"
 uuid = "41fe7b60-77ed-43a1-b4f0-825fd5a5650d"
@@ -2552,16 +2563,14 @@ version = "1.4.1+1"
 # ╔═╡ Cell order:
 # ╠═9922fbbc-b68a-4ce1-a790-7c6c03c894ec
 # ╠═fa35c482-d74f-11ee-0e9f-77b332036253
-# ╠═20f8ad8d-eb47-49ca-b7f2-262dbc8cc707
-# ╠═6f1daecf-e410-49da-a9e0-1a6b77895179
 # ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
-# ╠═803cdbc8-004a-47ed-b270-4951c5471382
 # ╠═46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
 # ╟─91015f7c-61ee-49cf-a8bb-e50f81b01964
 # ╟─1678c539-0f23-4638-a9ff-461ef268ad63
 # ╠═224ecd89-2aa1-41f2-8a6b-65a279681a05
 # ╟─1b21621d-ddc2-42dc-945f-60f4809d7ba3
 # ╟─8a155287-3565-4e4c-b2e9-1a8d658d6957
+# ╟─6f1daecf-e410-49da-a9e0-1a6b77895179
 # ╟─2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
 # ╟─5b8f7326-6d7f-44ac-82b9-799f03cedf46
 # ╟─bce16403-6dac-4b30-9327-0fd17f04d2a9
