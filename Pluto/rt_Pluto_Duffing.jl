@@ -27,67 +27,61 @@ function fduff!(du,u,p,t)
 end	
 
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-source = DESource(fduff!, [0.1, 0.], [0.15, 1.0, 0.,0.]; channel_map = [0,2]);
-
-# ╔═╡ 91015f7c-61ee-49cf-a8bb-e50f81b01964
-@bind ticks Clock(0.1,true)
+source = DESource(fduff!, [0.1, 0.], [0.15, 1.0, 0.,0.]; channel_map = [1,2]);
 
 # ╔═╡ 1678c539-0f23-4638-a9ff-461ef268ad63
-@bind start Button("START")
-
-# ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
-md"""
-μ : $(@bind μ Slider(0.0:0.005:1.0,default=0.1;show_value=true))
-β : $(@bind β Slider(-1.0:0.01:1.0,default=0.5;show_value=true)) \
-A : $(@bind A Slider(0.0:0.1:5.0,default=0.0;show_value=true)) 
-ω : $(@bind ω Slider(0.0:0.01:1.0,default=0.5;show_value=true)) \
-ts: $(@bind ts Slider(100:10:3000,default=1600;show_value=true)) 
-g : $(@bind g Slider(0.0:0.1:1.0,default=0.1;show_value=true)) \
-tail : $(@bind tail Slider(10:10:300,default=100;show_value=true))
-"""
-
-# ╔═╡ 8a155287-3565-4e4c-b2e9-1a8d658d6957
-@bind stop Button("STOP")
-
-# ╔═╡ 6f1daecf-e410-49da-a9e0-1a6b77895179
-output_device = get_default_output_device();
+begin
+	ticks_button = @bind ticks Clock(0.1,true);
+	start_button = @bind start Button("START");
+	stop_button = @bind stop Button("STOP");
+end;
 
 # ╔═╡ 2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
 let 
 	start
-	if Pa_IsStreamActive(source.data.stream_data.stream[]) < 0
-		start_DESource(source, output_device)
-	else
-		print("stream already started")
-	end	
-end	
+	output_device = get_default_output_device()
+	start_DESource(source, output_device; buffer_size=convert(UInt32,1024))
+end;
 
 # ╔═╡ 5b8f7326-6d7f-44ac-82b9-799f03cedf46
 let 
 	stop
-	if Pa_IsStreamActive(source.data.stream_data.stream[]) > 0
-		stopDESource(source)
-	else
-		print("stream is not active")
-	end
+	stop_DESource(source)
 end	
+
+# ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
+par_widget = @bind par PlutoUI.combine() do Child
+	md"""
+	# Forced Duffing
+	μ : $(Child("μ", Slider(0.0:0.005:1.0,default=0.1;show_value=true))) 
+	β : $(Child("β", Slider(-1.0:0.01:1.0,default=0.5;show_value=true))) \
+	A : $(Child("A", Slider(0.0:0.1:5.0,default=0.0;show_value=true))) 
+	ω : $(Child("ω", Slider(0.0:0.01:1.0,default=0.5;show_value=true))) \
+	ts : $(Child("ts", Slider(100:10:3000,default=1600;show_value=true))) 
+	g : $(Child("g", Slider(0.0:0.1:1.0,default=0.1;show_value=true))) \
+	tail : $(Child("tail", Slider(10:10:300,default=100;show_value=true)))
+	"""
+end;
 
 # ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
 begin 
-	@atomic source.data.control.ts = ts
-	@atomic source.data.control.p = [μ, β, A, ω]
-	@atomic source.data.control.gain = g
+	@atomic source.data.control.ts = par.ts
+	@atomic source.data.control.p = [par.μ, par.β, par.A, par.ω]
+	@atomic source.data.control.gain = par.g
 end;
 
 # ╔═╡ 18bcdad5-90a4-43c5-a978-94d7746c2887
 begin
 	ticks
 	sol = solve(ODEProblem(fduff!,source.data.state.u,
-		(source.data.state.t,source.data.state.t+tail),source.data.control.p),Tsit5())
+		(source.data.state.t,source.data.state.t+par.tail),source.data.control.p),Tsit5())
 end;
 
 # ╔═╡ 224ecd89-2aa1-41f2-8a6b-65a279681a05
-plot(sol,idxs=(1,2),c=:yellow,label="",border=:none,size=(600,400))
+plot_phase = plot(sol,idxs=(1,2),c=:yellow,label="",border=:none,size=(600,400));
+
+# ╔═╡ a81bba1b-efc0-43b6-92f5-0d0f2ff2d17f
+PlutoUI.ExperimentalLayout.vbox([par_widget,start_button,stop_button,plot_phase,ticks_button])
 
 # ╔═╡ 8635d63b-f995-45d4-966c-40790ee2c12a
 theme(:dark)
@@ -2565,14 +2559,12 @@ version = "1.4.1+1"
 # ╠═fa35c482-d74f-11ee-0e9f-77b332036253
 # ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
 # ╠═46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-# ╟─91015f7c-61ee-49cf-a8bb-e50f81b01964
-# ╟─1678c539-0f23-4638-a9ff-461ef268ad63
-# ╠═224ecd89-2aa1-41f2-8a6b-65a279681a05
-# ╟─1b21621d-ddc2-42dc-945f-60f4809d7ba3
-# ╟─8a155287-3565-4e4c-b2e9-1a8d658d6957
-# ╟─6f1daecf-e410-49da-a9e0-1a6b77895179
+# ╟─a81bba1b-efc0-43b6-92f5-0d0f2ff2d17f
 # ╟─2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
 # ╟─5b8f7326-6d7f-44ac-82b9-799f03cedf46
+# ╟─224ecd89-2aa1-41f2-8a6b-65a279681a05
+# ╟─1678c539-0f23-4638-a9ff-461ef268ad63
+# ╟─1b21621d-ddc2-42dc-945f-60f4809d7ba3
 # ╟─bce16403-6dac-4b30-9327-0fd17f04d2a9
 # ╟─18bcdad5-90a4-43c5-a978-94d7746c2887
 # ╟─8635d63b-f995-45d4-966c-40790ee2c12a

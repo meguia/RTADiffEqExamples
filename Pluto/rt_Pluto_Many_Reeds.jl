@@ -18,7 +18,7 @@ end
 using Atomix,PortAudio.LibPortAudio, PlutoUI, DifferentialEquations, JLD2, Plots
 
 # ╔═╡ fa35c482-d74f-11ee-0e9f-77b332036253
-include("../../PortAudioODE/rtODE/rt_ODE.jl")
+include("../../PortAudioODE/rtODE/rt_ODE.jl");
 
 # ╔═╡ 1d42bd2f-0518-4392-8abd-b14afb0f1b59
 function freed!(du,u,p,t)
@@ -34,6 +34,12 @@ begin
 	source2 = DESource(freed!, [0.1, 0.], [-0.1, 1.0, 0.]; channel_map = [1,1])
 	source3 = DESource(freed!, [0.1, 0.], [-0.1, 1.0, 0.]; channel_map = [1,0])
 end;
+
+# ╔═╡ 0e38806d-6092-468c-85b2-ce8ed814b9ee
+source1.data.stream_data.stream[]
+
+# ╔═╡ f230cf92-0e6b-4ed3-a07d-02fb685734b5
+Pa_IsStreamActive(source1.data.stream_data.stream[])
 
 # ╔═╡ 6f1daecf-e410-49da-a9e0-1a6b77895179
 output_device = get_default_output_device();
@@ -73,34 +79,28 @@ g $(@bind g Slider(0.0:0.1:1.0,default=0.1;show_value=true)) \
 
 # ╔═╡ df2bdf00-c0a3-499c-89b9-f880bc91e66b
 if R1
-	if Pa_IsStreamActive(source1.data.stream_data.stream[]) < 0
-		start_DESource(source1, output_device)
-	end	
-else	
+	start_DESource(source1, output_device)
+else
 	if Pa_IsStreamActive(source1.data.stream_data.stream[]) > 0
-		stopDESource(source1)
+		stop_DESource(source1)
 	end	
 end
 
 # ╔═╡ d5efe08e-543a-42d6-8eec-2f50d73f6dee
 if R2
-	if Pa_IsStreamActive(source2.data.stream_data.stream[]) < 0
-		start_DESource(source2, output_device)
-	end	
+	start_DESource(source2, output_device)
 else	
 	if Pa_IsStreamActive(source2.data.stream_data.stream[]) > 0
-		stopDESource(source2)
+		stop_DESource(source2)
 	end	
 end
 
 # ╔═╡ f3f2860a-6f55-4c96-9d21-9f86dd926268
 if R3
-	if Pa_IsStreamActive(source3.data.stream_data.stream[]) < 0
-		start_DESource(source3, output_device)
-	end	
+	start_DESource(source3, output_device)
 else	
 	if Pa_IsStreamActive(source3.data.stream_data.stream[]) > 0
-		stopDESource(source3)
+		stop_DESource(source3)
 	end	
 end
 
@@ -2593,10 +2593,12 @@ version = "1.4.1+1"
 # ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
 # ╠═46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
 # ╟─1b21621d-ddc2-42dc-945f-60f4809d7ba3
-# ╟─6f1daecf-e410-49da-a9e0-1a6b77895179
+# ╠═0e38806d-6092-468c-85b2-ce8ed814b9ee
+# ╠═f230cf92-0e6b-4ed3-a07d-02fb685734b5
 # ╟─df2bdf00-c0a3-499c-89b9-f880bc91e66b
 # ╟─d5efe08e-543a-42d6-8eec-2f50d73f6dee
 # ╟─f3f2860a-6f55-4c96-9d21-9f86dd926268
+# ╟─6f1daecf-e410-49da-a9e0-1a6b77895179
 # ╟─bce16403-6dac-4b30-9327-0fd17f04d2a9
 # ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
 # ╟─efc7afd3-c113-4910-949f-2ced2bec0646
