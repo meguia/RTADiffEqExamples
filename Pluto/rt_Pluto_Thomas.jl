@@ -30,9 +30,6 @@ end
 # ╔═╡ b1e2f00a-3c9b-4f35-840d-f60f1abd1a3f
 source = DESource(thomas!, [1.0;1.1;-0.01],[0.2,0.2]; channel_map = [1,2]);
 
-# ╔═╡ 6885a2bc-1379-455b-8e84-d494eb578c49
-print(source.data.state)
-
 # ╔═╡ cd976d06-b5e6-4115-9ab0-7abb5390347a
 begin
 	ticks_button = @bind ticks Clock(0.1,true);
@@ -40,9 +37,6 @@ begin
 	stop_button = @bind stop Button("STOP");
 	reset_button = @bind reset Button("RESET");
 end;
-
-# ╔═╡ 27fd31f9-6446-4f5f-bf66-815c554432c6
-buttons = PlutoUI.ExperimentalLayout.hbox([start_button,stop_button,reset_button]);
 
 # ╔═╡ 2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
 let 
@@ -60,39 +54,22 @@ end
 # ╔═╡ 6fbf80dd-a138-481b-b302-d5a432bccde9
 let
 	reset
-	@atomic source.data.control.u0 = [1.0;1.1;-0.01]
+	reset_state!(source)
 end;
 
-# ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
-par_widget = @bind par PlutoUI.combine() do Child
+# ╔═╡ 5b266fd9-b76c-411e-883c-96825f0404dc
+chan_widget = @bind chan PlutoUI.combine() do Child
 	md"""
-	# Thomas Attractor
-	a : $(Child("a", Slider(0.0:0.005:5.0,default=1.0;show_value=true))) 
-	b : $(Child("b", Slider(0.0:0.001:1.0,default=0.2;show_value=true))) \
-	ts : $(Child("ts", Slider(100:10:3000,default=1600;show_value=true))) 
-	g : $(Child("g", Slider(0.0:0.1:1.0,default=0.1;show_value=true))) \
-	tail : $(Child("tail", Slider(10:10:300,default=100;show_value=true)))
+	L : $(Child("L", Select([1,2,3])))
+	R : $(Child("R", Select([1,2,3])))
 	"""
 end;
 
-# ╔═╡ 6ef0c91a-93dd-429e-902f-dab242a8995a
-begin
-	ticks
-	sol = solve(ODEProblem(thomas!,source.data.state.u,(source.data.state.t,source.data.state.t+par.tail),source.data.control.p),Tsit5());
-end;
+# ╔═╡ 27fd31f9-6446-4f5f-bf66-815c554432c6
+buttons = PlutoUI.ExperimentalLayout.Div([start_button,stop_button,reset_button,chan_widget], style=Dict(	"display" => "flex","flex-direction" => "row","background" => "gray"));
 
-# ╔═╡ ec7f79c7-2d4c-401c-86d2-32281bc03f56
-plot_phase = plot(sol,idxs=(1,2),c=:yellow,label="",border=:none,size=(600,400));
-
-# ╔═╡ 239d2ce8-9d3f-445e-9414-93e0977146e4
-PlutoUI.ExperimentalLayout.vbox([par_widget,buttons,plot_phase,ticks_button])
-
-# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
-begin 
-	@atomic source.data.control.ts = par.ts
-	@atomic source.data.control.p = [par.a, par.b]
-	@atomic source.data.control.gain = par.g
-end;
+# ╔═╡ d8e7bdec-03dc-4f1c-865f-95d4a64ce110
+set_channelmap!(source,[chan.L,chan.R]);
 
 # ╔═╡ 9c75d205-b124-4719-ab75-8475490cfe23
 theme(:dark)
@@ -104,10 +81,66 @@ main {
     max-width: 800px;
 }
 input[type*="range"] {
-	width: 40%;
+	width: 38%;
 }
 </style>
 """
+
+# ╔═╡ 7ea8b061-4860-4696-b140-4147bedb8863
+sp = html"&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
+
+# ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
+par_widget = @bind par PlutoUI.combine() do Child
+	md"""
+	# Thomas Attractor
+	a : $(Child("a", Slider(0.0:0.005:5.0,default=1.0;show_value=true))) $sp
+	b : $(Child("b", Slider(0.0:0.001:1.0,default=0.2;show_value=true))) \
+	"""
+end;
+
+# ╔═╡ 124687aa-09ec-4888-898b-e2ae61dfdb0c
+par
+
+# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
+begin
+	set_param!(source,1,par.a)
+	set_param!(source,2,par.b)
+end;
+
+# ╔═╡ 83cccc37-a8eb-4451-8104-dca9f24a38d3
+scale_widget = @bind scale PlutoUI.combine() do Child
+	md"""
+	g : $(Child("g", Slider(0.0:0.1:1.0,default=0.1;show_value=true))) 	$sp
+	ts : $(Child("ts", Slider(100.0:10.0:3000.0,default=1500.0;show_value=true))) 
+	"""
+end;
+
+# ╔═╡ 6ef0c91a-93dd-429e-902f-dab242a8995a
+begin
+	ticks
+	sol = solve(ODEProblem(thomas!,source.data.state.u,(source.data.state.t,source.data.state.t+0.2*scale.ts),source.data.control.p),Tsit5());
+end;
+
+# ╔═╡ ec7f79c7-2d4c-401c-86d2-32281bc03f56
+plot_phase = plot(sol,idxs=(source.data.control.channel_map[1],source.data.control.channel_map[2]),c=:yellow,label="",border=:none,size=(600,400));
+
+# ╔═╡ 239d2ce8-9d3f-445e-9414-93e0977146e4
+PlutoUI.ExperimentalLayout.vbox([
+	par_widget,
+	scale_widget,
+	buttons,
+	plot_phase,
+	PlutoUI.ExperimentalLayout.Div(ticks_button,style="background:gray")
+])
+
+# ╔═╡ 100eefa5-3cab-4b5b-a82c-0833f4992a74
+begin 
+	set_ts!(source,scale.ts)
+	set_gain!(source,scale.g)
+end;
+
+# ╔═╡ 7882f121-b3e7-4ca5-98be-af91a6014e21
+sp
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2625,8 +2658,7 @@ version = "1.4.1+1"
 # ╠═fa35c482-d74f-11ee-0e9f-77b332036253
 # ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
 # ╠═b1e2f00a-3c9b-4f35-840d-f60f1abd1a3f
-# ╠═6885a2bc-1379-455b-8e84-d494eb578c49
-# ╟─239d2ce8-9d3f-445e-9414-93e0977146e4
+# ╠═239d2ce8-9d3f-445e-9414-93e0977146e4
 # ╠═27fd31f9-6446-4f5f-bf66-815c554432c6
 # ╟─2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
 # ╟─5b8f7326-6d7f-44ac-82b9-799f03cedf46
@@ -2635,8 +2667,15 @@ version = "1.4.1+1"
 # ╠═cd976d06-b5e6-4115-9ab0-7abb5390347a
 # ╠═6ef0c91a-93dd-429e-902f-dab242a8995a
 # ╠═1b21621d-ddc2-42dc-945f-60f4809d7ba3
+# ╠═83cccc37-a8eb-4451-8104-dca9f24a38d3
+# ╠═124687aa-09ec-4888-898b-e2ae61dfdb0c
+# ╠═5b266fd9-b76c-411e-883c-96825f0404dc
 # ╠═bce16403-6dac-4b30-9327-0fd17f04d2a9
+# ╠═100eefa5-3cab-4b5b-a82c-0833f4992a74
+# ╟─d8e7bdec-03dc-4f1c-865f-95d4a64ce110
 # ╟─9c75d205-b124-4719-ab75-8475490cfe23
-# ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
+# ╠═b0744443-8d19-41dc-abe8-9ba90ca91ca7
+# ╠═7882f121-b3e7-4ca5-98be-af91a6014e21
+# ╠═7ea8b061-4860-4696-b140-4147bedb8863
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
