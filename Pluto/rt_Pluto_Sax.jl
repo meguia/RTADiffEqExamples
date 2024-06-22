@@ -47,7 +47,7 @@ u0 = vcat([-0.3, 0],repeat([0.0,0.001],8));
 source = DESource(saxRN!, u0, [0.3, 0.6] ; channel_map = [1,2]);
 
 # ╔═╡ bbb5fd9a-7b93-4032-9cfd-60a098c35c93
-var_list = [1 => "x",2 => "v",3 => "p1",4 => "q1",5 => "p2",6 => "q2",7 => "p3",8 => "q3",9 => "p4",10 => "q4",11 => "p5",12 => "q5",13 => "p6",14 => "q6",15 => "p7",16 => "q7",17 => "p8",18 => "q8"];
+var_list = [1 => "x",2 => "v",3 => "p1",4 => "p2",5 => "p3",6 => "p4",7 => "p5",8 => "p6",9 => "p7",10 => "p8"];
 
 # ╔═╡ 05a5baa1-4373-42c8-88be-bfed98bcd9d7
 chan_widget = @bind chan PlutoUI.combine() do Child
@@ -93,6 +93,18 @@ plot_widget = PlutoUI.ExperimentalLayout.Div(ticks_button, style=Dict(	"display"
 # ╔═╡ e2e9a567-86bf-42ea-8ccd-d9b5d3929cdc
 set_channelmap!(source,[chan.L,chan.R]);
 
+# ╔═╡ e8454fdd-b322-4e67-bfa1-1c66be424837
+begin
+	ticks
+	sol = solve(ODEProblem(saxRN!,source.data.state.u,(source.data.state.t,source.data.state.t+30.0),source.data.control.p),Tsit5());
+end;
+
+# ╔═╡ 7820d89a-1e54-4800-9ca8-5f04ac08b7de
+begin 
+	plot_phase = plot(sol,idxs=(0,source.data.control.channel_map[1]),c=:yellow,label="");
+	plot!(plot_phase,sol,idxs=(0,source.data.control.channel_map[2]),c=:green,label="",border=:none,size=(600,200));
+end;
+
 # ╔═╡ 3c0ad46e-4cf2-467e-b298-56c2c1f25418
 theme(:dark)
 
@@ -134,21 +146,6 @@ scale_widget = @bind scale PlutoUI.combine() do Child
 	"""
 end;
 
-# ╔═╡ 3d419dab-b634-480d-93eb-3fb92c623a0a
-begin 
-	set_ts!(source,scale.ts)
-	set_gain!(source,scale.g)
-end;
-
-# ╔═╡ e8454fdd-b322-4e67-bfa1-1c66be424837
-begin
-	ticks
-	sol = solve(ODEProblem(saxRN!,source.data.state.u,(source.data.state.t,source.data.state.t+0.2*scale.ts),source.data.control.p),Tsit5());
-end;
-
-# ╔═╡ 7820d89a-1e54-4800-9ca8-5f04ac08b7de
-plot_phase = plot(sol,idxs=(source.data.control.channel_map[1],source.data.control.channel_map[2]),c=:yellow,label="",border=:none,size=(600,400),xlims=(-1.5,1),ylims=(-3,2));
-
 # ╔═╡ fdbfbbc9-9887-40b3-acdb-08fcc9f8d98e
 PlutoUI.ExperimentalLayout.vbox([
 	par_widget,
@@ -157,6 +154,12 @@ PlutoUI.ExperimentalLayout.vbox([
 	plot_phase,
 	plot_widget
 ])
+
+# ╔═╡ 3d419dab-b634-480d-93eb-3fb92c623a0a
+begin 
+	set_ts!(source,scale.ts)
+	set_gain!(source,scale.g)
+end;
 
 # ╔═╡ Cell order:
 # ╠═c7744a6e-da88-45c5-b2af-50c5d85b7a7b
