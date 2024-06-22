@@ -147,19 +147,31 @@ scale_widget = @bind scale PlutoUI.combine() do Child
 end;
 
 # ╔═╡ fdbfbbc9-9887-40b3-acdb-08fcc9f8d98e
-PlutoUI.ExperimentalLayout.vbox([
-	par_widget,
-	scale_widget,
-	buttons,
-	plot_phase,
-	plot_widget
-])
+begin 
+	dash_cell =  PlutoRunner.currently_running_cell_id[] |> string
+	PlutoUI.ExperimentalLayout.vbox([
+		par_widget,
+		buttons,
+		plot_phase,
+		plot_widget,
+		scale_widget
+	])
+end
 
 # ╔═╡ 3d419dab-b634-480d-93eb-3fb92c623a0a
 begin 
 	set_ts!(source,scale.ts)
 	set_gain!(source,scale.g)
 end;
+
+# ╔═╡ ba3f15e0-6321-42db-aede-ccc20c0a73b0
+notebook = PlutoRunner.notebook_id[] |> string
+
+# ╔═╡ 3eda34b2-ddf6-4466-bd1f-539270a0b77e
+dash_url = "http://localhost:1234/edit?id=" * notebook * "&isolated_cell_id=" * dash_cell * "&"
+
+# ╔═╡ 21c23174-807d-4367-8d6a-b40a25c2c9d4
+Markdown.parse("[Open Saxophone Dashboard]($dash_url)")
 
 # ╔═╡ Cell order:
 # ╠═c7744a6e-da88-45c5-b2af-50c5d85b7a7b
@@ -168,6 +180,7 @@ end;
 # ╠═08508733-0b35-4f45-a0ae-59a787637fe8
 # ╠═46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
 # ╠═fdbfbbc9-9887-40b3-acdb-08fcc9f8d98e
+# ╠═21c23174-807d-4367-8d6a-b40a25c2c9d4
 # ╠═1678c539-0f23-4638-a9ff-461ef268ad63
 # ╠═5fd39e58-16db-4137-863c-a50e593b6e58
 # ╠═dda4f990-6911-47a0-b94a-a5fc1b660759
@@ -185,4 +198,6 @@ end;
 # ╠═7820d89a-1e54-4800-9ca8-5f04ac08b7de
 # ╠═3c0ad46e-4cf2-467e-b298-56c2c1f25418
 # ╠═b0744443-8d19-41dc-abe8-9ba90ca91ca7
-# ╟─ead99107-492e-447c-bb5f-8407d1909658
+# ╠═ead99107-492e-447c-bb5f-8407d1909658
+# ╠═ba3f15e0-6321-42db-aede-ccc20c0a73b0
+# ╠═3eda34b2-ddf6-4466-bd1f-539270a0b77e
