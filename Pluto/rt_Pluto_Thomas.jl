@@ -114,7 +114,10 @@ theme(:dark)
 html"""
 <style>
 main {
-    max-width: 1000px;
+	margin: 0 auto;
+    max-width: 1500px;
+	padding-left: max(283px, 10%);
+    padding-right: max(383px, 10%); 
 }
 input[type*="range"] {
 	width: 38%;
@@ -203,5 +206,5 @@ PlutoUI.ExperimentalLayout.vbox([
 # ╠═6ef0c91a-93dd-429e-902f-dab242a8995a
 # ╠═ec7f79c7-2d4c-401c-86d2-32281bc03f56
 # ╟─9c75d205-b124-4719-ab75-8475490cfe23
-# ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
+# ╠═b0744443-8d19-41dc-abe8-9ba90ca91ca7
 # ╟─7ea8b061-4860-4696-b140-4147bedb8863
