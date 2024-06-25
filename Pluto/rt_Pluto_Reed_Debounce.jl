@@ -18,7 +18,7 @@ end
  import Pkg; Pkg.activate()
 
 # ╔═╡ 9922fbbc-b68a-4ce1-a790-7c6c03c894ec
-using RealTimeAudioDiffEq, PlutoUI, Plots, DifferentialEquations
+using RealTimeAudioDiffEq, PlutoUI, Plots, DifferentialEquations,HypertextLiteral
 
 # ╔═╡ 71f589fb-2164-4fce-b000-a82970a90248
 md"""
@@ -40,13 +40,122 @@ The value $\sigma=0.18$ seems adequate for $k$ values within the range $(0.1,2)$
 
 # ╔═╡ 1d42bd2f-0518-4392-8abd-b14afb0f1b59
 function nreed!(du,u,p,t)
-    (μ,k,σ) = p
+    (μ,k) = p
     du[1] = u[2] 
-	du[2] = u[2]*(μ-u[2]^2)-k*u[1]*(1.0+σ*sqrt(k)*u[1]^2)
+	du[2] = u[2]*(μ-u[2]^2)-k*u[1]*(1.0+0.18*sqrt(k)*u[1]^2)
 end
 
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-source = DESource(nreed!, [0.1, 0.], [-0.1, 1.0,0.0,0.0]; channel_map = [2,2]);
+source = DESource(nreed!, [0.1, 0.], [0.1, 1.0]; channel_map = [2,2]);
+
+# ╔═╡ 8f260354-0a78-40c0-ad7b-f3daead3a9f7
+begin
+	μ_array = -0.1:0.01:3.0
+	k_array = 0.1:0.01:2.0
+end	
+
+# ╔═╡ b9cad04e-ec07-40f6-b659-335bcb058ade
+theme(:dark)
+
+# ╔═╡ b0744443-8d19-41dc-abe8-9ba90ca91ca7
+html"""
+<style>
+main {
+    margin: 0 auto;
+    max-width: 1800px;
+	padding-left: max(283px, 10%);
+    padding-right: max(383px, 10%); 
+}
+input[type*="range"] {
+	width: 38%;
+}
+</style>
+"""
+
+# ╔═╡ 1c211ca9-3c35-4bc3-936b-26a366322bd9
+sp = html"&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
+
+# ╔═╡ b5b950d4-6852-42a9-895d-a9ce2eb6ca08
+function renderlodash(el, wait_ms::Real, method::String, options)
+	@htl("""
+	<span>
+	
+	$(el)
+
+	<script>
+		
+	const span = currentScript.parentElement
+	
+	const el = span.firstElementChild
+	
+	console.log(el)
+
+		const val = { current: el.value }
+		
+		const relay = _[$(method)](() => {
+			span.value = val.current
+			span.dispatchEvent(new CustomEvent("input"))
+		}, $(wait_ms), $(options))
+		
+		
+		;(async () => {
+			for (const value of Generators.input(el)) {
+				val.current = await value
+				relay()
+			  }
+		
+		})();
+		
+		
+		el.addEventListener("input", (e) => {
+			e.stopPropagation()
+		})
+
+	</script>
+	</span>
+	""")
+end
+
+# ╔═╡ 61d2bc84-7830-471e-93a2-18317f19440b
+begin
+	struct ThrottleDebounced{T}
+		x::T
+		wait_ms::Real
+		method::String
+		options
+	end
+	
+	
+	
+	Base.get(t::ThrottleDebounced{T}) where T = if hasmethod(Base.get, Tuple{T})
+		Base.get(t.x)
+	else
+		missing
+	end
+	
+	function Base.show(io::IO, m::MIME"text/html", t::ThrottleDebounced)
+		
+		
+		Base.show(io, m, renderlodash(t.x, t.wait_ms, t.method, t.options))
+	end
+	
+	
+	
+end
+
+# ╔═╡ 0b5f462e-861b-4e5f-8dd0-165a4025e3cc
+scale_widget = @bind scale PlutoUI.combine() do Child
+	md"""
+	g : $(Child("g", Slider(0.0:0.1:1.0,default=0.1;show_value=true))) 	$sp
+	ts : $(Child("ts", Slider(100.0:10.0:3000.0,default=1500.0;show_value=true))) 
+	"""
+end;
+
+# ╔═╡ ad7aadfb-d596-4bde-aa10-64cf1e0fb688
+begin 
+	set_ts!(source,scale.ts)
+	set_gain!(source,scale.g)
+end;
 
 # ╔═╡ 41dabe99-2401-4c34-9341-f8f1c1627c64
 chan_widget = @bind chan PlutoUI.combine() do Child
@@ -55,6 +164,9 @@ chan_widget = @bind chan PlutoUI.combine() do Child
 	R : $(Child("R", Select([1 => "x",2 => "y"],default=2)))
 	"""
 end;
+
+# ╔═╡ c000bc1a-3782-4924-b3f6-0f403645d95d
+set_channelmap!(source,[chan.L,chan.R]);
 
 # ╔═╡ 3e3b7c18-335c-48a3-afde-039590c50095
 begin
@@ -89,9 +201,6 @@ buttons = PlutoUI.ExperimentalLayout.Div([start_button,stop_button,reset_button,
 # ╔═╡ c5916ed9-fcc5-4aec-8369-9dd74a38f966
 plot_widget = PlutoUI.ExperimentalLayout.Div(ticks_button, style=Dict(	"display" => "flex","flex-direction" => "row","background" => "gray"));
 
-# ╔═╡ c000bc1a-3782-4924-b3f6-0f403645d95d
-set_channelmap!(source,[chan.L,chan.R]);
-
 # ╔═╡ 572007b9-8d58-4c4b-bda7-24cd734674f4
 begin
 	ticks
@@ -102,80 +211,38 @@ end;
 plot_phase = 
 	plot(sol,idxs=(0,chan.L),c=:yellow,label="",border=:none,ylims=(-2.5,2.5),size=(600,200));
 
-# ╔═╡ b9cad04e-ec07-40f6-b659-335bcb058ade
-theme(:dark)
-
-# ╔═╡ b0744443-8d19-41dc-abe8-9ba90ca91ca7
-html"""
-<style>
-main {
-    margin: 0 auto;
-    max-width: 1800px;
-	padding-left: max(283px, 10%);
-    padding-right: max(383px, 10%); 
-}
-input[type*="range"] {
-	width: 38%;
-}
-</style>
-"""
-
-# ╔═╡ 1795b892-ecb4-45c7-8ff8-7711fb518159
-kk = [2.,1.5,1.,0.7,0.5,0.4,0.3,0.2,0.1]
-
-# ╔═╡ 6140b3b6-380a-46a5-9141-86115f89cbab
-ss = [0.24,0.21,0.18,0.15,0.13,0.11,0.1,0.08,0.05]
-
-# ╔═╡ 42560b1c-8ba7-4ac8-954f-81dd58eeded1
-begin
-	scatter(kk,ss)
-	plot!(kk,0.18*kk.^(1/2))
-end	
-
-# ╔═╡ 1c211ca9-3c35-4bc3-936b-26a366322bd9
-sp = html"&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
-
-# ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
-par_widget = @bind par PlutoUI.combine() do Child
-	md"""
-	# New Reed
-	μ : $(Child("μ", Slider(-0.01:0.005:3.0;show_value=true))) $sp
-	k : $(Child("k", Slider(0.1:0.002:2.0;show_value=true))) \
-	σ : $(Child("σ", Slider(0.0:0.01:1.0;show_value=true))) 
-	"""
-end;
-
-# ╔═╡ 5d6537bb-b55e-4e88-b69a-28c2edecbffb
-par.k
-
-# ╔═╡ b84f016d-8eb8-4084-99d9-35727647594a
-begin
-	set_param!(source,1,par.μ)
-	set_param!(source,2,par.k)
-	set_param!(source,3,par.σ)
-end;
-
-# ╔═╡ 0b5f462e-861b-4e5f-8dd0-165a4025e3cc
-scale_widget = @bind scale PlutoUI.combine() do Child
-	md"""
-	g : $(Child("g", Slider(0.0:0.1:1.0,default=0.1;show_value=true))) 	$sp
-	ts : $(Child("ts", Slider(100.0:10.0:3000.0,default=1500.0;show_value=true))) 
-	"""
-end;
-
 # ╔═╡ b07c4785-7068-477a-8b12-81bb9a0a3d95
 PlutoUI.ExperimentalLayout.vbox([
-	par_widget,
 	scale_widget,
 	buttons,
 	plot_phase,
 	plot_widget
 ])
 
-# ╔═╡ ad7aadfb-d596-4bde-aa10-64cf1e0fb688
-begin 
-	set_ts!(source,scale.ts)
-	set_gain!(source,scale.g)
+# ╔═╡ d3115ee2-72d0-42d2-ae10-880d32d0c77e
+function debounced(el, wait=0; leading::Bool=false, maxwait::Union{Nothing,Real}=nothing, trailing::Bool=true)
+	ThrottleDebounced(
+		el,
+		wait * 1000,
+		"debounce",
+		Dict(
+			:leading=>leading,
+			:maxwait=>maxwait,
+			:trailing=>trailing,
+		)
+	)
+end
+
+# ╔═╡ d5d21944-f61a-4a71-9753-289ced41f7ef
+@bind μidx debounced(Slider(-0.1:0.01:3.0),1.0)
+
+# ╔═╡ 161cad06-1aca-46ed-89d0-a0a02b7eb123
+@bind kidx debounced(Slider(0.1:0.01:2.0),1.0)
+
+# ╔═╡ b84f016d-8eb8-4084-99d9-35727647594a
+begin
+	set_param!(source,1,μ_array[μidx])
+	set_param!(source,2,k_array[kidx])
 end;
 
 # ╔═╡ Cell order:
@@ -184,25 +251,26 @@ end;
 # ╟─71f589fb-2164-4fce-b000-a82970a90248
 # ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
 # ╠═46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
+# ╟─d5d21944-f61a-4a71-9753-289ced41f7ef
+# ╟─161cad06-1aca-46ed-89d0-a0a02b7eb123
 # ╟─b07c4785-7068-477a-8b12-81bb9a0a3d95
-# ╟─2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
-# ╟─5b8f7326-6d7f-44ac-82b9-799f03cedf46
+# ╠═2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
+# ╠═5b8f7326-6d7f-44ac-82b9-799f03cedf46
 # ╠═9512cc09-48cd-40c8-99d1-9299c96fcf8e
-# ╠═1b21621d-ddc2-42dc-945f-60f4809d7ba3
 # ╠═0b5f462e-861b-4e5f-8dd0-165a4025e3cc
 # ╠═41dabe99-2401-4c34-9341-f8f1c1627c64
 # ╠═3e3b7c18-335c-48a3-afde-039590c50095
 # ╠═248f0ef5-b462-427a-8a5c-09991da405e6
 # ╠═c5916ed9-fcc5-4aec-8369-9dd74a38f966
-# ╠═5d6537bb-b55e-4e88-b69a-28c2edecbffb
 # ╠═b84f016d-8eb8-4084-99d9-35727647594a
 # ╠═ad7aadfb-d596-4bde-aa10-64cf1e0fb688
 # ╠═c000bc1a-3782-4924-b3f6-0f403645d95d
 # ╠═572007b9-8d58-4c4b-bda7-24cd734674f4
 # ╠═c06113d0-a5d7-4bee-80a3-dcc4d4ac5202
+# ╠═8f260354-0a78-40c0-ad7b-f3daead3a9f7
 # ╠═b9cad04e-ec07-40f6-b659-335bcb058ade
-# ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
-# ╠═1795b892-ecb4-45c7-8ff8-7711fb518159
-# ╠═6140b3b6-380a-46a5-9141-86115f89cbab
-# ╠═42560b1c-8ba7-4ac8-954f-81dd58eeded1
+# ╠═b0744443-8d19-41dc-abe8-9ba90ca91ca7
 # ╟─1c211ca9-3c35-4bc3-936b-26a366322bd9
+# ╠═d3115ee2-72d0-42d2-ae10-880d32d0c77e
+# ╠═61d2bc84-7830-471e-93a2-18317f19440b
+# ╠═b5b950d4-6852-42a9-895d-a9ce2eb6ca08
