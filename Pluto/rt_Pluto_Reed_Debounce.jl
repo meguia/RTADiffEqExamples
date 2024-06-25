@@ -213,10 +213,10 @@ plot_phase =
 
 # ╔═╡ b07c4785-7068-477a-8b12-81bb9a0a3d95
 PlutoUI.ExperimentalLayout.vbox([
-	scale_widget,
 	buttons,
 	plot_phase,
-	plot_widget
+	plot_widget,
+	scale_widget,
 ])
 
 # ╔═╡ d3115ee2-72d0-42d2-ae10-880d32d0c77e
@@ -234,10 +234,15 @@ function debounced(el, wait=0; leading::Bool=false, maxwait::Union{Nothing,Real}
 end
 
 # ╔═╡ d5d21944-f61a-4a71-9753-289ced41f7ef
-@bind μidx debounced(Slider(-0.1:0.01:3.0),1.0)
+md"""
+$(@bind μidx debounced(Slider(-0.1:0.01:3.0),1.0)) 
+$(@bind kidx debounced(Slider(0.1:0.01:2.0),1.0))
+"""
 
-# ╔═╡ 161cad06-1aca-46ed-89d0-a0a02b7eb123
-@bind kidx debounced(Slider(0.1:0.01:2.0),1.0)
+# ╔═╡ 1dfe14a1-eeb4-4418-bc90-ed79a92d9858
+md"""
+μ = $(μ_array[μidx])  $sp $sp $sp $sp $sp $sp $sp  k = $(k_array[kidx])
+"""
 
 # ╔═╡ b84f016d-8eb8-4084-99d9-35727647594a
 begin
@@ -252,10 +257,10 @@ end;
 # ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
 # ╠═46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
 # ╟─d5d21944-f61a-4a71-9753-289ced41f7ef
-# ╟─161cad06-1aca-46ed-89d0-a0a02b7eb123
-# ╟─b07c4785-7068-477a-8b12-81bb9a0a3d95
-# ╠═2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
-# ╠═5b8f7326-6d7f-44ac-82b9-799f03cedf46
+# ╟─1dfe14a1-eeb4-4418-bc90-ed79a92d9858
+# ╠═b07c4785-7068-477a-8b12-81bb9a0a3d95
+# ╟─2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
+# ╟─5b8f7326-6d7f-44ac-82b9-799f03cedf46
 # ╠═9512cc09-48cd-40c8-99d1-9299c96fcf8e
 # ╠═0b5f462e-861b-4e5f-8dd0-165a4025e3cc
 # ╠═41dabe99-2401-4c34-9341-f8f1c1627c64
