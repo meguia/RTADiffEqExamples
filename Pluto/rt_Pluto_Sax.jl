@@ -22,7 +22,7 @@ using  RealTimeAudioDiffEq, PlutoUI, Plots, DifferentialEquations
 
 # ╔═╡ 1d42bd2f-0518-4392-8abd-b14afb0f1b59
 function saxRN!(dx,x,p,t)
-    γ,ζ = p
+    (γ,ζ) = p
 	ω0 = 4.224
 	ω = [1.195,2.483,3.727,4.405,5.153,6.177,6.749,7.987]
 	α = [0.0176,0.0355,0.0653,0.2693,0.0703,0.166,0.0945,0.1165]
@@ -101,12 +101,9 @@ end;
 
 # ╔═╡ 7820d89a-1e54-4800-9ca8-5f04ac08b7de
 begin 
-	plot_phase = plot(sol,idxs=(0,source.data.control.channel_map[1]),c=:yellow,label="");
-	plot!(plot_phase,sol,idxs=(0,source.data.control.channel_map[2]),c=:green,label="",border=:none,size=(600,200));
+	plot_phase = plot(sol,idxs=(0,source.data.control.channel_map[1]),c=:blue,label="");
+	plot!(plot_phase,sol,idxs=(0,source.data.control.channel_map[2]),c=:red,label="",border=:none,size=(600,200));
 end;
-
-# ╔═╡ 3c0ad46e-4cf2-467e-b298-56c2c1f25418
-theme(:dark)
 
 # ╔═╡ b0744443-8d19-41dc-abe8-9ba90ca91ca7
 html"""
@@ -179,25 +176,24 @@ Markdown.parse("[Open Saxophone Dashboard]($dash_url)")
 # ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
 # ╠═08508733-0b35-4f45-a0ae-59a787637fe8
 # ╠═46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
-# ╠═fdbfbbc9-9887-40b3-acdb-08fcc9f8d98e
-# ╠═21c23174-807d-4367-8d6a-b40a25c2c9d4
-# ╠═1678c539-0f23-4638-a9ff-461ef268ad63
-# ╠═5fd39e58-16db-4137-863c-a50e593b6e58
-# ╠═dda4f990-6911-47a0-b94a-a5fc1b660759
-# ╠═3c72c446-0afa-41d2-b0ec-635f7d7ab695
-# ╠═fa2fc75a-41b8-4197-92f6-71febfa64f30
-# ╠═bbb5fd9a-7b93-4032-9cfd-60a098c35c93
-# ╠═05a5baa1-4373-42c8-88be-bfed98bcd9d7
-# ╠═bce16403-6dac-4b30-9327-0fd17f04d2a9
-# ╠═37232245-ec07-4b70-a47f-903c6fb2a75f
-# ╠═514493d0-e0a5-48b5-af95-f4f76f1887c6
-# ╠═38ed81aa-ac15-40f7-9066-efd070f84fa4
-# ╠═3d419dab-b634-480d-93eb-3fb92c623a0a
-# ╠═e2e9a567-86bf-42ea-8ccd-d9b5d3929cdc
+# ╟─fdbfbbc9-9887-40b3-acdb-08fcc9f8d98e
+# ╟─21c23174-807d-4367-8d6a-b40a25c2c9d4
+# ╟─1678c539-0f23-4638-a9ff-461ef268ad63
+# ╟─5fd39e58-16db-4137-863c-a50e593b6e58
+# ╟─dda4f990-6911-47a0-b94a-a5fc1b660759
+# ╟─3c72c446-0afa-41d2-b0ec-635f7d7ab695
+# ╟─fa2fc75a-41b8-4197-92f6-71febfa64f30
+# ╟─bbb5fd9a-7b93-4032-9cfd-60a098c35c93
+# ╟─05a5baa1-4373-42c8-88be-bfed98bcd9d7
+# ╟─bce16403-6dac-4b30-9327-0fd17f04d2a9
+# ╟─37232245-ec07-4b70-a47f-903c6fb2a75f
+# ╟─514493d0-e0a5-48b5-af95-f4f76f1887c6
+# ╟─38ed81aa-ac15-40f7-9066-efd070f84fa4
+# ╟─3d419dab-b634-480d-93eb-3fb92c623a0a
+# ╟─e2e9a567-86bf-42ea-8ccd-d9b5d3929cdc
 # ╠═e8454fdd-b322-4e67-bfa1-1c66be424837
 # ╠═7820d89a-1e54-4800-9ca8-5f04ac08b7de
-# ╠═3c0ad46e-4cf2-467e-b298-56c2c1f25418
-# ╠═b0744443-8d19-41dc-abe8-9ba90ca91ca7
-# ╠═ead99107-492e-447c-bb5f-8407d1909658
-# ╠═ba3f15e0-6321-42db-aede-ccc20c0a73b0
-# ╠═3eda34b2-ddf6-4466-bd1f-539270a0b77e
+# ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
+# ╟─ead99107-492e-447c-bb5f-8407d1909658
+# ╟─ba3f15e0-6321-42db-aede-ccc20c0a73b0
+# ╟─3eda34b2-ddf6-4466-bd1f-539270a0b77e
