@@ -32,7 +32,7 @@ function freed!(du,u,p,t)
 end
 
 # ╔═╡ dc40a3e4-ed4c-4e04-ac6f-8bb2be28de86
-Nreeds = 7
+Nreeds = 4
 
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
 sources = [DESource(freed!, [0.1, 0.], [-0.1, 1.0, 0.]; channel_map = [mod(n,2),mod(n+1,2)]) for n=1:Nreeds];

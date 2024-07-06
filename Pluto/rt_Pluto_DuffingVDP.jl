@@ -34,14 +34,16 @@ md"""
 """
 
 # ╔═╡ 1d42bd2f-0518-4392-8abd-b14afb0f1b59
-function thomas!(du,u,p,t)
-	du[1]=sin(p[1]*u[2])-p[2]*u[1]
-	du[2]=sin(p[1]*u[3])-p[2]*u[2]
-	du[3]=sin(p[1]*u[1])-p[2]*u[3]
+function duffingvdp!(du,u,p,t)
+	(μ,β,c,α,τ) = p
+	du[1] = u[2]
+	du[2] = -μ*u[2]+u[1]*(β-u[1]^2)+c*(u[3]+u[4])
+	du[3] = τ*u[4]
+	du[4] = τ*(α*u[4]*(1.0-u[3]^2)-u[3])
 end	
 
 # ╔═╡ b1e2f00a-3c9b-4f35-840d-f60f1abd1a3f
-source = DESource(thomas!, [1.0;1.1;-0.01],[0.2,0.2]; channel_map = [1,2]);
+source = DESource(duffingvdp!, [0.1;0.1;0.1;0.1],[1.0,1.0,0.1,0.1,0.1]; channel_map = [1,2]);
 
 # ╔═╡ 6fc81c93-2a64-4c7e-98dd-e8a5b712f1d6
 html""" <h1> Behind the Scenes 2 </h1> """
@@ -131,19 +133,24 @@ sp = html"&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
 # ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
 par_widget = @bind par PlutoUI.combine() do Child
 	md"""
-	# Thomas Attractor
-	$\dot{x} = sin(ay)-bx$
-	$\dot{y} = sin(az)-bx$
-	$\dot{z} = sin(ax)-bx$ 
-	a : $(Child("a", Slider(1.0:0.005:4.0,default=1.0;show_value=true))) $sp
-	b : $(Child("b", Slider(0.1:0.001:0.8,default=0.2;show_value=true))) \
+	α : $(Child("α", Slider(0.0:0.01:5.0,default=0.1;show_value=true))) $sp
+	τ : $(Child("τ", Slider(0.1:0.001:1.0,default=0.1;show_value=true))) \
+	μ : $(Child("μ", Slider(0.01:0.001:0.2,default=0.1;show_value=true))) $sp
+	β : $(Child("β", Slider(-1.0:0.01:1.0,default=-10.0;show_value=true))) \
+	c : $(Child("c", Slider(0.0:0.01:2.0,default=-0.11;show_value=true))) $sp
 	"""
 end;
 
+# ╔═╡ cc6342fd-4d97-42c6-8998-3a165e233a3f
+par.α
+
 # ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
 begin
-	set_param!(source,1,par.a)
-	set_param!(source,2,par.b)
+	set_param!(source,1,par.μ)
+	set_param!(source,2,par.β)
+	set_param!(source,3,par.c)
+	set_param!(source,4,par.α)
+	set_param!(source,5,par.τ)
 end;
 
 # ╔═╡ 83cccc37-a8eb-4451-8104-dca9f24a38d3
@@ -163,7 +170,7 @@ end;
 # ╔═╡ 6ef0c91a-93dd-429e-902f-dab242a8995a
 begin
 	ticks
-	sol = solve(ODEProblem(thomas!,source.data.state.u,(source.data.state.t,source.data.state.t+0.2*scale.ts),source.data.control.p),Tsit5());
+	sol = solve(ODEProblem(duffingvdp!,source.data.state.u,(source.data.state.t,source.data.state.t+0.2*scale.ts),source.data.control.p),Tsit5());
 end;
 
 # ╔═╡ ec7f79c7-2d4c-401c-86d2-32281bc03f56
@@ -180,6 +187,7 @@ PlutoUI.ExperimentalLayout.vbox([
 
 # ╔═╡ Cell order:
 # ╟─5c9116e8-dd1b-4e99-b36c-6b143d16a348
+# ╠═cc6342fd-4d97-42c6-8998-3a165e233a3f
 # ╟─239d2ce8-9d3f-445e-9414-93e0977146e4
 # ╟─c29d861c-ca62-4624-92cf-9b9ac0db6e3a
 # ╟─dc66de9c-5dda-49d7-a274-88b1b176fd02
