@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.42
+# v0.19.43
 
 using Markdown
 using InteractiveUtils
@@ -23,7 +23,10 @@ using RealTimeAudioDiffEq, PlutoUI, Plots, DifferentialEquations
 # ╔═╡ 5c9116e8-dd1b-4e99-b36c-6b143d16a348
 html"<button onclick='present()'>present</button>"
 
-# ╔═╡ c29d861c-ca62-4624-92cf-9b9ac0db6e3a
+# ╔═╡ a6c03043-4255-4295-af49-fdd32b7d8bef
+html""" <h1> </h1>"""
+
+# ╔═╡ 1ee7a8d8-f233-4603-b613-f80ea1aead30
 html""" <h1> Behind the Scenes 1 </h1> """
 
 # ╔═╡ dc66de9c-5dda-49d7-a274-88b1b176fd02
@@ -35,15 +38,15 @@ md"""
 
 # ╔═╡ 1d42bd2f-0518-4392-8abd-b14afb0f1b59
 function duffingvdp!(du,u,p,t)
-	(μ,β,c,α,τ) = p
+	(μ,c,α,τ) = p
 	du[1] = u[2]
-	du[2] = -μ*u[2]+u[1]*(β-u[1]^2)+c*(u[3]+u[4])
+	du[2] = -μ*u[2]+u[1]*(1.0-u[1]^2)+c*(u[3]+u[4])
 	du[3] = τ*u[4]
 	du[4] = τ*(α*u[4]*(1.0-u[3]^2)-u[3])
 end	
 
 # ╔═╡ b1e2f00a-3c9b-4f35-840d-f60f1abd1a3f
-source = DESource(duffingvdp!, [0.1;0.1;0.1;0.1],[1.0,1.0,0.1,0.1,0.1]; channel_map = [1,2]);
+source = DESource(duffingvdp!, [0.1;0.1;0.1;0.1],[1.0,0.0,0.1,0.1]; channel_map = [1,2]);
 
 # ╔═╡ 6fc81c93-2a64-4c7e-98dd-e8a5b712f1d6
 html""" <h1> Behind the Scenes 2 </h1> """
@@ -60,14 +63,14 @@ Pluto UI Widgets
 # ╔═╡ 5b266fd9-b76c-411e-883c-96825f0404dc
 chan_widget = @bind chan PlutoUI.combine() do Child
 	md"""
-	L : $(Child("L", Select([1 => "x",2 => "y",3 => "z"],default=1)))
-	R : $(Child("R", Select([1 => "x",2 => "y",3 => "z"],default=2)))
+	L : $(Child("L", Select([1 => "x1",2 => "y1",3 => "x2",4 => "y2"],default=1)))
+	R : $(Child("R", Select([1 => "x1",2 => "y1",3 => "x2",4 => "y2"],default=2)))
 	"""
 end;
 
 # ╔═╡ cd976d06-b5e6-4115-9ab0-7abb5390347a
 begin
-	ticks_button = @bind ticks Clock(0.1);
+	ticks_button = @bind ticks PlutoUI.Clock(0.1);
 	start_button = @bind start Button("START");
 	stop_button = @bind stop Button("STOP");
 	reset_button = @bind reset Button("RESET");
@@ -133,24 +136,23 @@ sp = html"&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
 # ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
 par_widget = @bind par PlutoUI.combine() do Child
 	md"""
-	α : $(Child("α", Slider(0.0:0.01:5.0,default=0.1;show_value=true))) $sp
+	$\dot{x_1} = y_1  \qquad \qquad \qquad \qquad \qquad\dot{x_2} = \tau y_2$
+	$\dot{y_1} = -\mu y_1+x_1(1-x_1^2)+c(x_2+y_2) \qquad \qquad \dot{y_2} = \tau(\alpha y_2 (1-x_2^2)-x_2)$ 
+	
+	
+	α : $(Child("α", Slider(-0.1:0.01:5.0,default=0.1;show_value=true))) $sp
 	τ : $(Child("τ", Slider(0.1:0.001:1.0,default=0.1;show_value=true))) \
 	μ : $(Child("μ", Slider(0.01:0.001:0.2,default=0.1;show_value=true))) $sp
-	β : $(Child("β", Slider(-1.0:0.01:1.0,default=-10.0;show_value=true))) \
-	c : $(Child("c", Slider(0.0:0.01:2.0,default=-0.11;show_value=true))) $sp
+	c : $(Child("c", Slider(0.0:0.01:2.0,default=-0.11;show_value=true))) 
 	"""
 end;
-
-# ╔═╡ cc6342fd-4d97-42c6-8998-3a165e233a3f
-par.α
 
 # ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
 begin
 	set_param!(source,1,par.μ)
-	set_param!(source,2,par.β)
-	set_param!(source,3,par.c)
-	set_param!(source,4,par.α)
-	set_param!(source,5,par.τ)
+	set_param!(source,2,par.c)
+	set_param!(source,3,par.α)
+	set_param!(source,4,par.τ)
 end;
 
 # ╔═╡ 83cccc37-a8eb-4451-8104-dca9f24a38d3
@@ -174,7 +176,7 @@ begin
 end;
 
 # ╔═╡ ec7f79c7-2d4c-401c-86d2-32281bc03f56
-plot_phase = plot(sol,idxs=(source.data.control.channel_map[1],source.data.control.channel_map[2]),c=:yellow,label="",border=:none,size=(600,400));
+plot_phase = plot(sol,idxs=(source.data.control.channel_map[1],source.data.control.channel_map[2]),c=:yellow,label="",border=:none,size=(500,300));
 
 # ╔═╡ 239d2ce8-9d3f-445e-9414-93e0977146e4
 PlutoUI.ExperimentalLayout.vbox([
@@ -187,10 +189,10 @@ PlutoUI.ExperimentalLayout.vbox([
 
 # ╔═╡ Cell order:
 # ╟─5c9116e8-dd1b-4e99-b36c-6b143d16a348
-# ╠═cc6342fd-4d97-42c6-8998-3a165e233a3f
+# ╟─a6c03043-4255-4295-af49-fdd32b7d8bef
 # ╟─239d2ce8-9d3f-445e-9414-93e0977146e4
-# ╟─c29d861c-ca62-4624-92cf-9b9ac0db6e3a
-# ╟─dc66de9c-5dda-49d7-a274-88b1b176fd02
+# ╟─1ee7a8d8-f233-4603-b613-f80ea1aead30
+# ╠═dc66de9c-5dda-49d7-a274-88b1b176fd02
 # ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
 # ╠═b1e2f00a-3c9b-4f35-840d-f60f1abd1a3f
 # ╠═2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
@@ -211,8 +213,8 @@ PlutoUI.ExperimentalLayout.vbox([
 # ╠═d8e7bdec-03dc-4f1c-865f-95d4a64ce110
 # ╠═6ef0c91a-93dd-429e-902f-dab242a8995a
 # ╠═ec7f79c7-2d4c-401c-86d2-32281bc03f56
-# ╟─9c75d205-b124-4719-ab75-8475490cfe23
-# ╠═b0744443-8d19-41dc-abe8-9ba90ca91ca7
-# ╟─7ea8b061-4860-4696-b140-4147bedb8863
 # ╠═9922fbbc-b68a-4ce1-a790-7c6c03c894ec
 # ╠═d5b9cf97-d1b3-4154-b991-3c645971f795
+# ╟─9c75d205-b124-4719-ab75-8475490cfe23
+# ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
+# ╟─7ea8b061-4860-4696-b140-4147bedb8863

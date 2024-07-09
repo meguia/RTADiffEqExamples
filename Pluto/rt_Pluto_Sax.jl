@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.42
+# v0.19.43
 
 using Markdown
 using InteractiveUtils
@@ -123,7 +123,7 @@ sp = html"&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
 # ╔═╡ 3c72c446-0afa-41d2-b0ec-635f7d7ab695
 par_widget = @bind par PlutoUI.combine() do Child
 	md"""
-	# Saxophone
+	# Saxophone Model
 	γ : $(Child("γ", Slider(0.0:0.005:1.0,default=0.1;show_value=true))) $sp
 	ζ : $(Child("ζ", Slider(0.0:0.01:1.0,default=0.6;show_value=true))) \
 	""" 
@@ -181,7 +181,7 @@ Markdown.parse("[Open Saxophone Dashboard]($dash_url)")
 # ╟─1678c539-0f23-4638-a9ff-461ef268ad63
 # ╟─5fd39e58-16db-4137-863c-a50e593b6e58
 # ╟─dda4f990-6911-47a0-b94a-a5fc1b660759
-# ╟─3c72c446-0afa-41d2-b0ec-635f7d7ab695
+# ╠═3c72c446-0afa-41d2-b0ec-635f7d7ab695
 # ╟─fa2fc75a-41b8-4197-92f6-71febfa64f30
 # ╟─bbb5fd9a-7b93-4032-9cfd-60a098c35c93
 # ╟─05a5baa1-4373-42c8-88be-bfed98bcd9d7
