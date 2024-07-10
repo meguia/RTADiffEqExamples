@@ -173,7 +173,6 @@ Markdown.parse("[Open Saxophone Dashboard]($dash_url)")
 # ╔═╡ Cell order:
 # ╠═c7744a6e-da88-45c5-b2af-50c5d85b7a7b
 # ╠═9922fbbc-b68a-4ce1-a790-7c6c03c894ec
-# ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
 # ╠═08508733-0b35-4f45-a0ae-59a787637fe8
 # ╠═46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
 # ╟─fdbfbbc9-9887-40b3-acdb-08fcc9f8d98e
@@ -181,7 +180,8 @@ Markdown.parse("[Open Saxophone Dashboard]($dash_url)")
 # ╟─1678c539-0f23-4638-a9ff-461ef268ad63
 # ╟─5fd39e58-16db-4137-863c-a50e593b6e58
 # ╟─dda4f990-6911-47a0-b94a-a5fc1b660759
-# ╠═3c72c446-0afa-41d2-b0ec-635f7d7ab695
+# ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
+# ╟─3c72c446-0afa-41d2-b0ec-635f7d7ab695
 # ╟─fa2fc75a-41b8-4197-92f6-71febfa64f30
 # ╟─bbb5fd9a-7b93-4032-9cfd-60a098c35c93
 # ╟─05a5baa1-4373-42c8-88be-bfed98bcd9d7
@@ -191,8 +191,8 @@ Markdown.parse("[Open Saxophone Dashboard]($dash_url)")
 # ╟─38ed81aa-ac15-40f7-9066-efd070f84fa4
 # ╟─3d419dab-b634-480d-93eb-3fb92c623a0a
 # ╟─e2e9a567-86bf-42ea-8ccd-d9b5d3929cdc
-# ╠═e8454fdd-b322-4e67-bfa1-1c66be424837
-# ╠═7820d89a-1e54-4800-9ca8-5f04ac08b7de
+# ╟─e8454fdd-b322-4e67-bfa1-1c66be424837
+# ╟─7820d89a-1e54-4800-9ca8-5f04ac08b7de
 # ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
 # ╟─ead99107-492e-447c-bb5f-8407d1909658
 # ╟─ba3f15e0-6321-42db-aede-ccc20c0a73b0

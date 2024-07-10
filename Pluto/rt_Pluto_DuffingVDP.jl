@@ -54,7 +54,7 @@ html""" <h1> Behind the Scenes 2 </h1> """
 # ╔═╡ 00a46792-c686-46c2-8f0d-70b784bb808b
 md"""
 Pluto UI Widgets
-- Parameters (a,b)
+- Parameters (α,τ,μ,c)
 - Temporal scaling and gain (ts,g)
 - Channel Mapping
 - Buttons (ticks/clock, start, stop, reset)
@@ -138,8 +138,6 @@ par_widget = @bind par PlutoUI.combine() do Child
 	md"""
 	$\dot{x_1} = y_1  \qquad \qquad \qquad \qquad \qquad\dot{x_2} = \tau y_2$
 	$\dot{y_1} = -\mu y_1+x_1(1-x_1^2)+c(x_2+y_2) \qquad \qquad \dot{y_2} = \tau(\alpha y_2 (1-x_2^2)-x_2)$ 
-	
-	
 	α : $(Child("α", Slider(-0.1:0.01:5.0,default=0.1;show_value=true))) $sp
 	τ : $(Child("τ", Slider(0.1:0.001:1.0,default=0.1;show_value=true))) \
 	μ : $(Child("μ", Slider(0.01:0.001:0.2,default=0.1;show_value=true))) $sp
@@ -192,7 +190,7 @@ PlutoUI.ExperimentalLayout.vbox([
 # ╟─a6c03043-4255-4295-af49-fdd32b7d8bef
 # ╟─239d2ce8-9d3f-445e-9414-93e0977146e4
 # ╟─1ee7a8d8-f233-4603-b613-f80ea1aead30
-# ╠═dc66de9c-5dda-49d7-a274-88b1b176fd02
+# ╟─dc66de9c-5dda-49d7-a274-88b1b176fd02
 # ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
 # ╠═b1e2f00a-3c9b-4f35-840d-f60f1abd1a3f
 # ╠═2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
