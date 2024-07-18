@@ -108,7 +108,10 @@ end;
 html"""
 <style>
 main {
-    max-width: 1000px;
+	margin: 0 auto;
+    max-width: 1500px;
+	padding-left: max(283px, 10%);
+    padding-right: max(383px, 10%); 
 }
 input[type*="range"] {
 	width: 30%;
@@ -199,5 +202,5 @@ end;
 # ╟─30f6fd14-bee3-469d-a9c5-0364c4e7a150
 # ╟─8d7fb8ae-ab5e-44bc-85f0-b6a1c5e472a3
 # ╟─66434892-ed49-490c-aad7-6670917954f5
-# ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
+# ╠═b0744443-8d19-41dc-abe8-9ba90ca91ca7
 # ╟─434c0ab9-0ab4-4d2b-8ae4-91a4dd6005c0

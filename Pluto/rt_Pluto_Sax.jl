@@ -20,6 +20,9 @@ end
 # ╔═╡ 9922fbbc-b68a-4ce1-a790-7c6c03c894ec
 using  RealTimeAudioDiffEq, PlutoUI, Plots, DifferentialEquations
 
+# ╔═╡ 08508733-0b35-4f45-a0ae-59a787637fe8
+u0 = vcat([-0.3, 0],repeat([0.0,0.001],8));
+
 # ╔═╡ 1d42bd2f-0518-4392-8abd-b14afb0f1b59
 function saxRN!(dx,x,p,t)
     (γ,ζ) = p
@@ -39,9 +42,6 @@ function saxRN!(dx,x,p,t)
     end
     dx
 end
-
-# ╔═╡ 08508733-0b35-4f45-a0ae-59a787637fe8
-u0 = vcat([-0.3, 0],repeat([0.0,0.001],8));
 
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
 source = DESource(saxRN!, u0, [0.3, 0.6] ; channel_map = [1,2]);
@@ -109,7 +109,10 @@ end;
 html"""
 <style>
 main {
-    max-width: 1000px;
+	margin: 0 auto;
+    max-width: 1500px;
+	padding-left: max(283px, 10%);
+    padding-right: max(383px, 10%); 
 }
 input[type*="range"] {
 	width: 38%;
@@ -194,6 +197,6 @@ Markdown.parse("[Open Saxophone Dashboard]($dash_url)")
 # ╟─e8454fdd-b322-4e67-bfa1-1c66be424837
 # ╟─7820d89a-1e54-4800-9ca8-5f04ac08b7de
 # ╟─b0744443-8d19-41dc-abe8-9ba90ca91ca7
-# ╟─ead99107-492e-447c-bb5f-8407d1909658
+# ╠═ead99107-492e-447c-bb5f-8407d1909658
 # ╟─ba3f15e0-6321-42db-aede-ccc20c0a73b0
 # ╟─3eda34b2-ddf6-4466-bd1f-539270a0b77e
