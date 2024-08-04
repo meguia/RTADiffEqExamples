@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.42
+# v0.19.45
 
 using Markdown
 using InteractiveUtils
@@ -25,7 +25,7 @@ function vfolds!(du,u,p,t)
 	(μ,k) = p
 	kc = k + 0.1*μ*(k+1)
 	du[1] = u[2]
-	du[2] = (μ-u[1]^2)*u[2]-k*u[1]-0.5
+	du[2] = (μ-u[1]^2)*u[2]-kc*u[1]-0.5
 end
 
 # ╔═╡ 46a395c6-2cd0-42c8-b4e5-d0d0f71638e3
