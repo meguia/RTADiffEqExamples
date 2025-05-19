@@ -1,21 +1,26 @@
 ### A Pluto.jl notebook ###
-# v0.19.43
+# v0.20.8
 
 using Markdown
 using InteractiveUtils
 
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
-    quote
+    #! format: off
+    return quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
+    #! format: on
 end
 
 # ╔═╡ d5b9cf97-d1b3-4154-b991-3c645971f795
  import Pkg; Pkg.activate()
+
+# ╔═╡ bb547bcd-b6b2-4b65-8b02-3345e943681b
+Pkg.add("Plots")
 
 # ╔═╡ 9922fbbc-b68a-4ce1-a790-7c6c03c894ec
 using RealTimeAudioDiffEq, PlutoUI, Plots, DifferentialEquations
@@ -41,7 +46,7 @@ function thomas!(du,u,p,t)
 end	
 
 # ╔═╡ b1e2f00a-3c9b-4f35-840d-f60f1abd1a3f
-source = DESource(thomas!, [1.0;1.1;-0.01],[0.2,0.2]; channel_map = [1,2]);
+source = DESource(thomas!, [1.0;1.1;-0.01],[2.5,0.4]; channel_map = [1,2]);
 
 # ╔═╡ 6fc81c93-2a64-4c7e-98dd-e8a5b712f1d6
 html""" <h1> Behind the Scenes 2 </h1> """
@@ -207,4 +212,5 @@ PlutoUI.ExperimentalLayout.vbox([
 # ╠═b0744443-8d19-41dc-abe8-9ba90ca91ca7
 # ╟─7ea8b061-4860-4696-b140-4147bedb8863
 # ╠═9922fbbc-b68a-4ce1-a790-7c6c03c894ec
+# ╠═bb547bcd-b6b2-4b65-8b02-3345e943681b
 # ╠═d5b9cf97-d1b3-4154-b991-3c645971f795
