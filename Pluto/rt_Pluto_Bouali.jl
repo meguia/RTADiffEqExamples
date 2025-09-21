@@ -20,20 +20,24 @@ end
 using RealTimeAudioDiffEq, PlutoUI, Plots, DifferentialEquations
 
 # ╔═╡ 1d42bd2f-0518-4392-8abd-b14afb0f1b59
-function thomas!(du,u,p,t)
-	du[1]=sin(p[1]*u[2])-p[2]*u[1]
-	du[2]=sin(p[1]*u[3])-p[2]*u[2]
-	du[3]=sin(p[1]*u[1])-p[2]*u[3]
+function bouali!(du,u,p,t)
+	du[1]= 3*u[1]*(1-u[2])-p[1]*u[3]
+	du[2]= -u[2]*(1-u[1]*u[1])
+	du[3]= -0.2*u[4]
+	du[4] = 0.01*u[3]
 end	
 
 # ╔═╡ b1e2f00a-3c9b-4f35-840d-f60f1abd1a3f
-source = DESource(thomas!, [1.0;1.1;-0.01],[2.5,0.4]; channel_map = [1,2]);
+source = DESource(bouali!, [1.0,1.0,1.0,1.0],[0.1]; channel_map = [1,2]);
+
+# ╔═╡ 0eae0acd-b144-4b75-b930-357d2edbcb46
+source.data.control.u0[1]
 
 # ╔═╡ 5b266fd9-b76c-411e-883c-96825f0404dc
 chan_widget = @bind chan PlutoUI.combine() do Child
 	md"""
-	L : $(Child("L", Select([1 => "x",2 => "y",3 => "z"],default=1)))
-	R : $(Child("R", Select([1 => "x",2 => "y",3 => "z"],default=2)))
+	L : $(Child("L", Select([1 => "x",2 => "y",3 => "z",4 => "w"],default=1)))
+	R : $(Child("R", Select([1 => "x",2 => "y",3 => "z",4 => "w"],default=2)))
 	"""
 end;
 
@@ -78,9 +82,6 @@ Setting the atomic control parameters and Plotting the solution
 # ╔═╡ d8e7bdec-03dc-4f1c-865f-95d4a64ce110
 set_channelmap!(source,[chan.L,chan.R]);
 
-# ╔═╡ 9c75d205-b124-4719-ab75-8475490cfe23
-theme(:dark)
-
 # ╔═╡ b0744443-8d19-41dc-abe8-9ba90ca91ca7
 html"""
 <style>
@@ -96,26 +97,30 @@ input[type*="range"] {
 </style>
 """
 
+# ╔═╡ 9c75d205-b124-4719-ab75-8475490cfe23
+theme(:dark)
+
 # ╔═╡ 7ea8b061-4860-4696-b140-4147bedb8863
 sp = html"&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
 
 # ╔═╡ 1b21621d-ddc2-42dc-945f-60f4809d7ba3
 par_widget = @bind par PlutoUI.combine() do Child
 	md"""
-	# Thomas Attractor
-	$\dot{x} = sin(ay)-bx$
-	$\dot{y} = sin(az)-bx$
-	$\dot{z} = sin(ax)-bx$ 
-	a : $(Child("a", Slider(1.0:0.005:4.0,default=1.0;show_value=true))) $sp
-	b : $(Child("b", Slider(0.1:0.001:0.8,default=0.2;show_value=true))) \
+	# Bouali Attractor
+	$\dot{x} = 3x(1-y) - 0.1z$
+	$\dot{y} = - y (1-x^2)$
+	$\dot{z} = - 0.02 w$ 
+	$\dot{w} = 0.01 z$ 
+	β : $(Child("β", Slider(0.01:0.01:0.25,default=0.1;show_value=true))) $sp
+	u0 : $(Child("u0", Slider(0.01:0.01:3.0,default=1.0;show_value=true))) \
 	"""
 end;
 
-# ╔═╡ bce16403-6dac-4b30-9327-0fd17f04d2a9
-begin
-	set_param!(source,1,par.a)
-	set_param!(source,2,par.b)
-end;
+# ╔═╡ d8d1d8c5-5874-415b-af0d-b6c764f6c309
+set_u0!(source,[par.u0,par.u0,par.u0,par.u0])
+
+# ╔═╡ e78a6765-ed60-4f6c-b7c7-48aa084a8c63
+set_param!(source,1,par.β)
 
 # ╔═╡ 83cccc37-a8eb-4451-8104-dca9f24a38d3
 scale_widget = @bind scale PlutoUI.combine() do Child
@@ -134,7 +139,7 @@ end;
 # ╔═╡ 6ef0c91a-93dd-429e-902f-dab242a8995a
 begin
 	ticks
-	sol = solve(ODEProblem(thomas!,source.data.state.u,(source.data.state.t,source.data.state.t+0.2*scale.ts),source.data.control.p),Tsit5());
+	sol = solve(ODEProblem(bouali!,source.data.state.u,(source.data.state.t,source.data.state.t+0.2*scale.ts),source.data.control.p),Tsit5());
 end;
 
 # ╔═╡ ec7f79c7-2d4c-401c-86d2-32281bc03f56
@@ -2877,6 +2882,7 @@ version = "1.9.2+0"
 # ╠═239d2ce8-9d3f-445e-9414-93e0977146e4
 # ╠═1d42bd2f-0518-4392-8abd-b14afb0f1b59
 # ╠═b1e2f00a-3c9b-4f35-840d-f60f1abd1a3f
+# ╠═0eae0acd-b144-4b75-b930-357d2edbcb46
 # ╠═2b6e2f6a-2a89-43ca-b75e-e6a28f34737d
 # ╠═5b8f7326-6d7f-44ac-82b9-799f03cedf46
 # ╠═6fbf80dd-a138-481b-b302-d5a432bccde9
@@ -2887,13 +2893,14 @@ version = "1.9.2+0"
 # ╠═27fd31f9-6446-4f5f-bf66-815c554432c6
 # ╠═83bf7282-9f19-4cfa-a6f4-9a7297ba6b43
 # ╟─36aa0503-e724-48e4-9218-472223fb5d0e
-# ╠═bce16403-6dac-4b30-9327-0fd17f04d2a9
 # ╠═100eefa5-3cab-4b5b-a82c-0833f4992a74
+# ╠═d8d1d8c5-5874-415b-af0d-b6c764f6c309
+# ╠═e78a6765-ed60-4f6c-b7c7-48aa084a8c63
 # ╠═d8e7bdec-03dc-4f1c-865f-95d4a64ce110
 # ╠═6ef0c91a-93dd-429e-902f-dab242a8995a
 # ╠═ec7f79c7-2d4c-401c-86d2-32281bc03f56
-# ╟─9c75d205-b124-4719-ab75-8475490cfe23
 # ╠═b0744443-8d19-41dc-abe8-9ba90ca91ca7
+# ╟─9c75d205-b124-4719-ab75-8475490cfe23
 # ╟─7ea8b061-4860-4696-b140-4147bedb8863
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
